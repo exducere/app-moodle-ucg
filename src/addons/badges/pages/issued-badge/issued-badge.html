@@ -1,0 +1,262 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>
+                @if (badge(); as badgeToShow) {
+                    <core-format-text [text]="badgeToShow.name" />
+                } @else {
+                    {{ 'addon.badges.badges' | translate }}
+                }
+            </h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content [core-swipe-navigation]="badges()">
+    <ion-refresher slot="fixed" [disabled]="!loaded()" (ionRefresh)="refreshBadges($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="loaded()" placeholderType="imageandboxes">
+        @if (badge(); as badgeToShow) {
+            <ion-row class="ion-wrap list-item-limited-width">
+                <ion-col size="auto" class="ion-text-center">
+                    @if (badgeToShow.badgeurl) {
+                        <div class="badge-image-container">
+                            <img [url]="badgeToShow.badgeurl" core-external-content [alt]="badgeToShow.name" class="badge-image" />
+
+                            @if (badgeToShow.dateexpire && currentTime() >= badgeToShow.dateexpire) {
+                                <ion-icon name="fas-circle-exclamation" class="expireimage" color="warning"
+                                    [title]="'addon.badges.expireddate' | translate: {$a: (badgeToShow.dateexpire * 1000 | coreFormatDate)}"
+                                    [attr.aria-label]="'addon.badges.expireddate' | translate:
+                                    {$a: (badgeToShow.dateexpire * 1000 | coreFormatDate)}" />
+                            }
+                        </div>
+                    }
+                </ion-col>
+                <ion-col class="badge-details">
+                    @if (badgeToShow.name) {
+                        <ion-item class="ion-text-wrap">
+                            <ion-label>
+                                <h2><core-format-text [text]="badgeToShow.name" /></h2>
+                            </ion-label>
+                        </ion-item>
+                    }
+                    <ion-item class="ion-text-wrap">
+                        <ion-label>
+                            <p class="badge-awardedto">
+                                {{ 'addon.badges.awardedto' | translate: {$a: badgeToShow.recipientfullname } }}
+                            </p>
+                        </ion-label>
+                    </ion-item>
+
+                    <ion-item-group class="badge-issued-expire">
+                        @if (badgeToShow.dateissued || badgeToShow.dateexpire) {
+                            <ion-item class="ion-text-wrap">
+                                <ion-label>
+                                    @if (badgeToShow.dateissued) {
+                                        <p>
+                                            {{ 'addon.badges.issuedon' | translate:
+                                                {$a: (badgeToShow.dateissued * 1000 | coreFormatDate)} }}
+                                        </p>
+                                    }
+                                    @if (badgeToShow.dateexpire) {
+                                        @if (currentTime() < badgeToShow.dateexpire) {
+                                            <p>
+                                                {{ 'addon.badges.expiresin' | translate:
+                                                    {$a: (badgeToShow.dateexpire * 1000 | coreFormatDate)} }}
+                                            </p>
+                                        } @else {
+                                            <p>
+                                                {{ 'addon.badges.expiredin' | translate:
+                                                    {$a: (badgeToShow.dateexpire * 1000 | coreFormatDate)} }}
+                                            </p>
+                                        }
+                                    }
+                                </ion-label>
+                            </ion-item>
+                        }
+
+                        @if (issuerWithMail()) {
+                            <ion-item class="ion-text-wrap">
+                                <ion-label>
+                                    <p class="item-heading" [innerHTML]="'addon.badges.issuedby' | translate: {$a: issuerWithMail() }">
+                                    </p>
+                                </ion-label>
+                            </ion-item>
+                        }
+
+                        @if (badgeToShow.coursefullname) {
+                            <ion-item class="ion-text-wrap">
+                                <ion-label>
+                                    <p class="item-heading">
+                                        <core-format-text [text]="'addon.badges.course' | translate: {$a: badgeToShow.coursefullname }"
+                                            contextLevel="course" [contextInstanceId]="badgeToShow.courseid" />
+                                    </p>
+                                </ion-label>
+                            </ion-item>
+                        }
+                    </ion-item-group>
+
+                    <!-- Tags (not yet available) @see MOBILE-4371 -->
+
+                    @if (badgeToShow.description) {
+                        <ion-item class="ion-text-wrap">
+                            <ion-label>
+                                <p class="item-heading">{{ badgeToShow.description }}</p>
+                            </ion-label>
+                        </ion-item>
+                    }
+
+                    <!-- Criteria (not yet available) -->
+
+                    <ion-accordion-group class="badge-other-fields">
+                        <ion-accordion value="more" toggleIconSlot="start">
+                            <ion-item class="ion-text-wrap divider" slot="header">
+                                <ion-label>
+                                    <p class="item-heading">{{ 'addon.badges.moredetails' | translate }}</p>
+                                </ion-label>
+                            </ion-item>
+                            <div slot="content">
+                                <ion-item-group>
+                                    @if (badgeToShow.version) {
+                                        <ion-item class="ion-text-wrap">
+                                            <ion-label>
+                                                <p class="item-heading">{{ 'addon.badges.version' | translate}}</p>
+                                                <p>{{ badgeToShow.version }}</p>
+                                            </ion-label>
+                                        </ion-item>
+                                    }
+                                    @if (badgeToShow.language) {
+                                        <ion-item class="ion-text-wrap">
+                                            <ion-label>
+                                                <p class="item-heading">{{ 'addon.badges.language' | translate}}</p>
+                                                <p>{{ badgeToShow.language }}</p>
+                                            </ion-label>
+                                        </ion-item>
+                                    }
+                                    @if (badgeToShow.imagecaption) {
+                                        <ion-item class="ion-text-wrap">
+                                            <ion-label>
+                                                <p class="item-heading">{{ 'addon.badges.imagecaption' | translate}}</p>
+                                                <p>{{ badgeToShow.imagecaption }}</p>
+                                            </ion-label>
+                                        </ion-item>
+                                    }
+                                </ion-item-group>
+
+                                <!-- Endorsement -->
+                                @if (badgeToShow.endorsement) {
+                                    <ion-item-group>
+                                        <ion-item-divider>
+                                            <ion-label>
+                                                <h2>{{ 'addon.badges.bendorsement' | translate}}</h2>
+                                            </ion-label>
+                                        </ion-item-divider>
+                                        @if (badgeToShow.endorsement.issuername) {
+                                            <ion-item class="ion-text-wrap">
+                                                <ion-label>
+                                                    <p class="item-heading">{{ 'addon.badges.issuername' | translate}}</p>
+                                                    <p>{{ badgeToShow.endorsement.issuername }}</p>
+                                                </ion-label>
+                                            </ion-item>
+                                        }
+                                        @if (badgeToShow.endorsement.issueremail) {
+                                            <ion-item class="ion-text-wrap">
+                                                <ion-label>
+                                                    <p class="item-heading">{{ 'addon.badges.issueremail' | translate}}</p>
+                                                    <p>
+                                                        <a href="mailto:{{badgeToShow.endorsement.issueremail}}" core-link
+                                                            [autoLogin]="false" [showBrowserWarning]="false">
+                                                            {{ badgeToShow.endorsement.issueremail }}
+                                                        </a>
+                                                    </p>
+                                                </ion-label>
+                                            </ion-item>
+                                        }
+                                        @if (badgeToShow.endorsement.issuerurl) {
+                                            <ion-item class="ion-text-wrap">
+                                                <ion-label>
+                                                    <p class="item-heading">{{ 'addon.badges.issuerurl' | translate}}</p>
+                                                    <p><a [href]="badgeToShow.endorsement.issuerurl" core-link [autoLogin]="false">
+                                                            {{ badgeToShow.endorsement.issuerurl }}
+                                                        </a>
+                                                    </p>
+                                                </ion-label>
+                                            </ion-item>
+                                        }
+                                        @if (badgeToShow.endorsement.dateissued) {
+                                            <ion-item class="ion-text-wrap">
+                                                <ion-label>
+                                                    <p class="item-heading">{{ 'addon.badges.dateawarded' | translate}}</p>
+                                                    <p>{{ badgeToShow.endorsement.dateissued * 1000 | coreFormatDate }}</p>
+                                                </ion-label>
+                                            </ion-item>
+                                        }
+                                        @if (badgeToShow.endorsement.claimid) {
+                                            <ion-item class="ion-text-wrap">
+                                                <ion-label>
+                                                    <p class="item-heading">{{ 'addon.badges.claimid' | translate}}</p>
+                                                    <p><a [href]="badgeToShow.endorsement.claimid" core-link [autoLogin]="false">
+                                                            {{ badgeToShow.endorsement.claimid }}
+                                                        </a>
+                                                    </p>
+                                                </ion-label>
+                                            </ion-item>
+                                        }
+                                        @if (badgeToShow.endorsement.claimcomment) {
+                                            <ion-item class="ion-text-wrap">
+                                                <ion-label>
+                                                    <p class="item-heading">{{ 'addon.badges.claimcomment' | translate}}</p>
+                                                    <p>{{ badgeToShow.endorsement.claimcomment }}</p>
+                                                </ion-label>
+                                            </ion-item>
+                                        }
+                                    </ion-item-group>
+                                }
+
+                                <!-- Related badges -->
+                                @if (badgeToShow.relatedbadges?.length > 0) {
+                                    <ion-item-group>
+                                        <ion-item-divider>
+                                            <ion-label>
+                                                <h2>{{ 'addon.badges.relatedbages' | translate}}</h2>
+                                            </ion-label>
+                                        </ion-item-divider>
+                                        @for (relatedBadge of badgeToShow.relatedbadges; track relatedBadge.id) {
+                                            <ion-item class="ion-text-wrap">
+                                                <ion-label>
+                                                    <p>{{ relatedBadge.name }}</p>
+                                                </ion-label>
+                                            </ion-item>
+                                        }
+                                    </ion-item-group>
+                                }
+
+                                <!-- Competencies alignment -->
+                                @if (badgeToShow.alignment?.length > 0) {
+                                    <ion-item-group>
+                                        <ion-item-divider>
+                                            <ion-label>
+                                                <h2>{{ 'addon.badges.alignment' | translate}}</h2>
+                                            </ion-label>
+                                        </ion-item-divider>
+                                        @for (alignment of badgeToShow.alignment; track alignment.id) {
+                                            <ion-item class="ion-text-wrap" [href]="alignment.targetUrl" core-link [autoLogin]="false">
+                                                <ion-label>
+                                                    <p>{{ alignment.targetName }}</p>
+                                                </ion-label>
+                                            </ion-item>
+                                        }
+                                    </ion-item-group>
+                                }
+
+                            </div>
+                        </ion-accordion>
+                    </ion-accordion-group>
+                </ion-col>
+            </ion-row>
+        }
+    </core-loading>
+</ion-content>

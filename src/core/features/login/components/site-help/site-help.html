@@ -1,0 +1,45 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            <h1>{{ 'core.login.help' | translate }}</h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="close()" [ariaLabel]="'core.close' | translate">
+                <ion-icon slot="icon-only" name="fas-xmark" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-list>
+        <ion-accordion-group>
+            @for (question of questions; track question.id) {
+                <ion-accordion [value]="question.id" toggleIconSlot="start">
+                    <ion-item slot="header" class="ion-text-wrap divider">
+                        <ion-label>
+                            <h2>{{ question.text }}</h2>
+                        </ion-label>
+                    </ion-item>
+                    <div slot="content">
+                        <ion-item [class]="[question.answer.class, 'ion-text-wrap', 'core-login-site-help--answer']">
+                            <ion-label>
+                                @if (question.answer.format === 'text') {
+                                    <p>{{ question.answer.text }}</p>
+                                } @else if (question.answer.format === 'safe-html') {
+                                    <p [innerHTML]="question.answer.text"></p>
+                                } @else if (question.answer.format === 'unsafe-html') {
+                                    <core-format-text [text]="question.answer.text" [filter]="false" />
+                                }
+                            </ion-label>
+                        </ion-item>
+                    </div>
+                </ion-accordion>
+            }
+        </ion-accordion-group>
+        <ion-item>
+            <ion-label>
+                <p [innerHTML]="'core.login.faqmore' | translate"></p>
+            </ion-label>
+        </ion-item>
+    </ion-list>
+</ion-content>

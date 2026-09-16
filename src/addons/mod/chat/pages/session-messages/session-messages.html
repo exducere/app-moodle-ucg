@@ -1,0 +1,99 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'addon.mod_chat.messages' | translate }}</h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!loaded" (ionRefresh)="refreshMessages($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="loaded">
+        <ion-list class="addon-messages-discussion-container">
+            <ng-container *ngFor="let message of messages; index as index;">
+
+                @if (message.showDate) {
+                    <div class="ion-text-center addon-messages-date">
+                        {{ message.timestamp * 1000 | coreFormatDate:"strftimedayshort" }}
+                    </div>
+                }
+
+                @if (message.special) {
+                    <div class="ion-text-center addon-mod_chat-notice">
+                        @if (message.issystem && message.message === 'enter') {
+                            <ion-badge class="ion-text-wrap" color="success">
+                                <span>
+                                    <ion-icon name="fas-right-to-bracket" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messageenter' | translate:{$a: message.userfullname} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (message.issystem && message.message === 'exit') {
+                            <ion-badge class="ion-text-wrap" color="danger">
+                                <span>
+                                    <ion-icon name="fas-right-from-bracket" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messageexit' | translate:{$a: message.userfullname} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (message.beep === 'all') {
+                            <ion-badge class="ion-text-wrap" color="primary">
+                                <span>
+                                    <ion-icon name="ucg-notification-03" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messagebeepseveryone' | translate:{$a: message.userfullname} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (message.userid !== currentUserId && message.beep === currentUserId) {
+                            <ion-badge class="ion-text-wrap" color="primary">
+                                <span>
+                                    <ion-icon name="ucg-notification-03" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messagebeepsyou' | translate:{$a: message.userfullname} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (message.userid === currentUserId && message.beep && message.beep !== 'all') {
+                            <ion-badge class="ion-text-wrap" color="light">
+                                <span>
+                                    <ion-icon name="ucg-notification-03" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messageyoubeep' | translate:{$a: message.beepWho} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (!message.issystem && !message.beep) {
+                            <ion-badge class="ion-text-wrap" color="info">
+                                <span>
+                                    <ion-icon name="fas-asterisk" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    <strong>
+                                        {{ message.userfullname }} <core-format-text [text]="message.message" contextLevel="module"
+                                            [contextInstanceId]="cmId" [courseId]="courseId" />
+                                    </strong>
+                                </span>
+                            </ion-badge>
+                        }
+                    </div>
+                }
+
+                @if (!message.special) {
+                    <core-message [message]="message" [user]="message" [text]="message.message" [time]="message.timestamp * 1000"
+                        contextLevel="module" [instanceId]="cmId" [courseId]="courseId" />
+                }
+            </ng-container>
+        </ion-list>
+    </core-loading>
+</ion-content>

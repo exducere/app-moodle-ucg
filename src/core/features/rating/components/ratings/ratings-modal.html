@@ -1,0 +1,36 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            <h1>{{ 'core.rating.ratings' | translate }}</h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="closeModal()" [ariaLabel]="'core.close' | translate">
+                <ion-icon slot="icon-only" name="fas-xmark" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <core-loading [hideUntil]="loaded">
+        @if (ratings.length > 0) {
+            <ion-list>
+                @for (rating of ratings; track rating.id) {
+                    <ion-item class="ion-text-wrap">
+                        <core-user-avatar [user]="rating" [courseId]="courseId" slot="start" />
+                        <ion-label>
+                            <p class="item-heading">{{ rating.userfullname }}</p>
+                            <p>{{ rating.rating }}</p>
+                        </ion-label>
+                        @if (rating.timemodified) {
+                            <ion-note slot="end">
+                                {{ rating.timemodified | coreDateDayOrTime }}
+                            </ion-note>
+                        }
+                    </ion-item>
+                }
+            </ion-list>
+        } @else {
+            <core-empty-box icon="fas-star-half-stroke" [message]="'core.rating.noratings' | translate" />
+        }
+    </core-loading>
+</ion-content>

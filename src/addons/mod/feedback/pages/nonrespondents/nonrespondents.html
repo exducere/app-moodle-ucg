@@ -1,0 +1,51 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'addon.mod_feedback.responses' |translate }}</h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!loaded" (ionRefresh)="refreshFeedback($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="loaded">
+        <ion-list class="ion-no-margin">
+            <core-group-selector [groupInfo]="groupInfo" [(selected)]="selectedGroup" (selectedChange)="loadAttempts(selectedGroup)"
+                [courseId]="courseId" />
+
+            <ion-item-divider>
+                <ion-label>
+                    <h2>{{ 'addon.mod_feedback.non_respondents_students' | translate : {$a: total } }}</h2>
+                </ion-label>
+            </ion-item-divider>
+
+            @if (total > 0) {
+                @for (user of users; track user.userid) {
+                    <ion-item class="ion-text-wrap">
+                        <core-user-avatar [user]="user" slot="start" />
+                        <ion-label>
+                            <p class="item-heading">{{ user.fullname }}</p>
+                            <p>
+                                @if (user.started) {
+                                    <ion-badge color="success">
+                                        {{ 'addon.mod_feedback.started' | translate}}
+                                    </ion-badge>
+                                } @else {
+                                    <ion-badge color="danger">
+                                        {{ 'addon.mod_feedback.not_started' | translate}}
+                                    </ion-badge>
+                                }
+                            </p>
+                        </ion-label>
+                    </ion-item>
+                }
+            }
+
+            <core-infinite-loading [enabled]="canLoadMore" (action)="loadAttempts(undefined, $event)" [error]="loadMoreError" />
+        </ion-list>
+    </core-loading>
+</ion-content>

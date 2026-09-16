@@ -1,0 +1,145 @@
+@use "src/theme/globals" as *;
+
+:host {
+    --icon-color: var(--gray-500);
+    --core-table-border-color: var(--stroke);
+}
+
+:host-context(:root.dark) {
+    --icon-color: var(--gray-200);
+}
+
+table.core-table.core-grades-table {
+    width: 100%;
+    margin: 0px;
+
+    thead #gradeitem {
+        @include padding(null, null, null, 24px);
+    }
+
+    tbody tr.core-bold th {
+      font-weight: inherit;
+    }
+
+    tbody #gradeitem {
+        @include padding(null, null, null, 4px);
+    }
+
+    th, td {
+        @include padding(8px, 8px, 8px, 0px);
+        vertical-align: top;
+    }
+
+    .core-grades-table-gradeitem {
+        @include padding(null, null, null, 4px);
+
+        &.column-itemname {
+            @include padding(null, null, null, 0);
+        }
+
+        img {
+            width: 16px;
+            height: 16px;
+        }
+
+        core-mod-icon {
+            --module-icon-padding: 0px;
+            --module-legacy-icon-padding: 0px;
+            --module-icon-size: 16px;
+            --module-legacy-icon-size: 16px;
+        }
+
+        ion-icon {
+            color: var(--icon-color);
+        }
+
+        span {
+            @include margin(null, null, null, 4px);
+        }
+
+        .expandable-status-icon {
+            font-size: var(--text-size);
+            @include margin-horizontal(0, 2px);
+            @include core-transition(transform, 200ms);
+
+            &.expandable-status-icon-expanded {
+                transform: var(--rotate-expandable);
+            }
+        }
+
+    }
+
+    .core-grades-table-feedback {
+        @include padding(null, null, null, 4px);
+
+        .no-overflow {
+            overflow: auto;
+        }
+
+    }
+
+    .core-grades-table-grade > div {
+        * {
+            line-height: var(--mdl-typography-label-lineHeight-sm);
+            vertical-align: middle;
+        }
+
+        ion-icon {
+            @include padding(null, 4px, 2px, null);
+        }
+
+        ::ng-deep .penalty-indicator-icon {
+            display: none;
+        }
+    }
+
+    .core-grades-table-leader {
+        width: 0;
+    }
+
+    .core-grades-grade-clickable {
+        cursor: pointer;
+        &:hover {
+            td, th, th[aria-current="page"] {
+                background-color: var(--cell-hover);
+            }
+        }
+
+        th, td {
+            height: var(--a11y-sizing-minTargetSize);
+            vertical-align: middle;
+        }
+    }
+
+    ion-list, ion-item::part(native) {
+        background-color: transparent;
+    }
+
+    &.summary .ion-hide-md-down {
+        display: none;
+        opacity: 0;
+    }
+
+    .core-grades-expanded-grade {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        ion-icon {
+            flex-shrink: 0;
+        }
+    }
+
+    .core-grades-expanded-grade-penalty {
+        color: var(--danger);
+        font-size: 0.75em;
+    }
+}
+
+@include media-breakpoint-down(md) {
+
+    .core-grades-table td {
+        font-size: 0.85em;
+    }
+
+}

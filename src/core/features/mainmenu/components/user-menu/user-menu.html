@@ -1,0 +1,160 @@
+<ion-header class="ion-no-border">
+    <ion-toolbar>
+        <div class="user-menu-header">
+            <div>
+                <span>UCG Moodle</span>
+                <h1>{{ 'core.user.useraccount' | translate }}</h1>
+            </div>
+            <ion-button fill="clear" class="user-menu-close" (click)="close($event)" [ariaLabel]="'core.close' | translate">
+                <ion-icon name="fas-xmark" slot="icon-only" aria-hidden="true" />
+            </ion-button>
+        </div>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-refresher slot="fixed" (ionRefresh)="refreshData($event.target)">
+        <ion-refresher-content [pullingText]="'core.pulltorefresh' | translate" />
+    </ion-refresher>
+
+    <core-loading [hideUntil]="handlersLoaded" placeholderType="column" placeholderHeight="48px">
+        <div class="user-menu-content">
+            @if (siteInfo) {
+                <section class="user-account-card" aria-label="Cuenta institucional">
+                    <div class="user-account-brand">
+                        <img class="user-account-logo user-account-logo--light" src="assets/img/ucg/logo-ucg-color.png" alt="" />
+                        <img class="user-account-logo user-account-logo--dark" src="assets/img/ucg/logo-2-white.png" alt="" />
+
+                        <div class="user-account-site">
+                            <strong>{{ siteName }}</strong>
+                            @if (displaySiteUrl) {
+                                <a [href]="siteUrl" core-link class="core-usermenu-siteurl">
+                                    <span>{{ siteUrl }}</span>
+                                    <ion-icon name="open-outline" aria-hidden="true" />
+                                </a>
+                            } @else {
+                                <span>Campus virtual</span>
+                            }
+                        </div>
+                    </div>
+
+                    <ion-item button class="core-usermenu-profile ion-text-wrap" lines="none"
+                        (click)="openUserProfile($event)" [detail]="true">
+                        <core-user-avatar [user]="user" [linkProfile]="false" slot="start" />
+                        <ion-label>
+                            <span class="profile-label">Perfil institucional</span>
+                            <p class="item-heading">{{ user?.fullname ?? siteInfo.fullname }}</p>
+                        </ion-label>
+                    </ion-item>
+                </section>
+            }
+
+            <section class="user-menu-section" aria-label="Opciones del perfil">
+                <ion-list lines="none">
+                    @for (handler of handlers; track handler.name) {
+                        <ng-container
+                            *ngTemplateOutlet="menuHandler; context: { handler, class: 'core-user-menu-handler' }" />
+                    }
+
+                    @for (item of customItems; track item) {
+                        <core-dynamic-component [component]="customMenuOverrideComponent" [data]="item">
+                            <core-custom-menu-item [type]="item.type" [label]="item.label" [icon]="item.icon" [url]="item.url"
+                                [extraData]="item.extraData" />
+                        </core-dynamic-component>
+                    }
+                </ion-list>
+            </section>
+
+            @if (accountHandlers.length > 0) {
+                <section class="user-menu-section" aria-label="Opciones de la cuenta">
+                    <ion-list lines="none">
+                        @for (handler of accountHandlers; track handler.name) {
+                            <ng-container
+                                *ngTemplateOutlet="menuHandler; context: { handler, class: 'core-user-account-menu-handler' }" />
+                        }
+                    </ion-list>
+                </section>
+            }
+
+            <section class="user-menu-section" aria-label="Configuración y soporte">
+                <ion-list lines="none">
+                    <ion-item button (click)="openPreferences($event)" [attr.aria-label]="'core.settings.preferences' | translate"
+                        [detail]="true" class="core-user-menu-preferences user-menu-item">
+                        <ion-icon name="ucg-wrench-01" slot="start" aria-hidden="true" />
+                        <ion-label>
+                            <p class="item-heading">{{ 'core.settings.preferences' | translate }}</p>
+                        </ion-label>
+                    </ion-item>
+
+                    @if (displayContactSupport) {
+                        <ion-item button (click)="contactSupport($event)" [attr.aria-label]="'core.user.support' | translate"
+                            [detail]="true" detailIcon="open-outline" class="core-user-menu-support user-menu-item">
+                            <ion-icon name="ucg-mail-02" slot="start" aria-hidden="true" />
+                            <ion-label>
+                                <p class="item-heading">{{ 'core.user.support' | translate }}</p>
+                            </ion-label>
+                        </ion-item>
+                    }
+                </ion-list>
+            </section>
+        </div>
+    </core-loading>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+    <div class="user-menu-footer">
+        @if (displaySwitchAccount) {
+            <ion-item button lines="none" (click)="switchAccounts($event)" [detail]="true"
+                class="user-menu-switch-account ion-text-wrap">
+                <ion-icon name="ucg-card-exchange-01" slot="start" aria-hidden="true" />
+                <ion-label>
+                    <span>Cambiar</span>
+                    <p class="item-heading">{{ 'core.mainmenu.switchaccount' | translate }}</p>
+                </ion-label>
+            </ion-item>
+        }
+
+        <ion-button (click)="logout($event)" expand="block" fill="clear" color="danger"
+            [ariaLabel]="'core.mainmenu.logout' | translate" class="user-menu-logout ion-text-wrap">
+            @if (!removeAccountOnLogout) {
+                <ion-icon name="ucg-logout-01" slot="start" aria-hidden="true" />
+                {{ 'core.mainmenu.logout' | translate }}
+            } @else {
+                <ion-icon name="ucg-trash" slot="start" aria-hidden="true" />
+                {{ 'core.login.removeaccount' | translate }}
+            }
+        </ion-button>
+    </div>
+</ion-footer>
+
+<ng-template #menuHandler let-handlerUntyped="handler" let-typeClass="class">
+    @let handler = castHandlerType(handlerUntyped);
+
+    @if ('component' in handler) {
+        <core-dynamic-component [component]="handler.component" [data]="handler.componentData" />
+    } @else {
+        <ion-item button (click)="handlerClicked($event, handler)"
+            [class]="['ion-text-wrap', 'user-menu-item', typeClass, handler.class]"
+            [hidden]="handler.hidden" [attr.aria-label]="handler.title | translate" [detail]="true">
+            @if (handler.icon) {
+                <ion-icon [name]="handler.icon" slot="start" aria-hidden="true" />
+            }
+            <ion-label>
+                <p class="item-heading">{{ handler.title | translate }}</p>
+            </ion-label>
+            @if (handler.showBadge) {
+                <ion-badge slot="end" [hidden]="handler.loading || !handler.badge" aria-hidden="true">
+                    {{ handler.badge }}
+                </ion-badge>
+                @if (handler.badge && handler.badgeA11yText) {
+                    <span class="sr-only">
+                        {{ handler.badgeA11yText | translate: {$a : handler.badge } }}
+                    </span>
+                }
+                @if (handler.loading) {
+                    <ion-spinner slot="end" [attr.aria-label]="'core.loading' | translate" />
+                }
+            }
+        </ion-item>
+    }
+</ng-template>

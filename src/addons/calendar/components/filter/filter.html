@@ -1,0 +1,42 @@
+<ion-header class="no-title">
+    <ion-toolbar>
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="closeModal()" [ariaLabel]="'core.close' | translate">
+                <ion-icon name="fas-xmark" slot="icon-only" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true">
+    @if (types.length > 0) {
+        <ion-list>
+            @for (type of types; track type) {
+                <ion-item [class]="['addon-calendar-event', 'addon-calendar-eventtype-'+type]">
+                    <ion-icon [name]="typeIcons[type]" slot="start" aria-hidden="true" />
+                    <ion-toggle [(ngModel)]="filter[type]" (ionChange)="onChange()">
+                        {{ 'addon.calendar.' + type + 'events' | translate}}
+                    </ion-toggle>
+                </ion-item>
+            }
+        </ion-list>
+    }
+
+    @if (filter.course || filter.category || filter.group) {
+        <core-spacer />
+        <ion-list>
+            <ion-radio-group [(ngModel)]="courseId" (ionChange)="onChange()">
+                @for (course of sortedCourses; track course.id) {
+                    <ion-item class="ion-text-wrap">
+                        <ion-radio [value]="course.id">
+                            @if (showFullName) {
+                                <core-format-text [text]="course.fullname" [filter]="false" />
+                            } @else {
+                                <core-format-text [text]="course.shortname" [filter]="false" />
+                            }
+                        </ion-radio>
+                    </ion-item>
+                }
+            </ion-radio-group>
+        </ion-list>
+    }
+</ion-content>

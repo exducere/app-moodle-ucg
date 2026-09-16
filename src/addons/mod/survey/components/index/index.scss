@@ -1,0 +1,26 @@
+:host {
+    --grid-background: var(--core-table-odd-cell-background);
+    --even-background: var(--core-table-even-cell-background);
+
+    .option-name {
+        font-size: var(--text-size);
+    }
+
+    .addon-mod_survey-question {
+        border-top: 1px solid var(--stroke);
+    }
+
+    ion-row {
+        background-color: var(--grid-background);
+    }
+
+    .even {
+        background-color: var(--even-background);
+    }
+
+    ion-radio {
+        height: var(--a11y-sizing-minTargetSize);
+        width: var(--a11y-sizing-minTargetSize);
+        padding: 12px;
+    }
+}

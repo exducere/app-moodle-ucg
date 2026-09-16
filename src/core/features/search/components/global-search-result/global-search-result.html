@@ -1,0 +1,42 @@
+<ion-item lines="inset" button (click)="onClick.emit($event)">
+    @if (result.course) {
+        <core-course-image [course]="result.course" />
+    }
+    @if (result.user) {
+        <core-user-avatar [user]="result.user" [linkProfile]="false" />
+    }
+    <ion-label>
+        @if (result.title) {
+            <p class="item-heading">
+                @if (renderedIcon) {
+                    <ion-icon [name]="renderedIcon" aria-hidden="true" />
+                } @else if (result.module) {
+                    <core-mod-icon [modicon]="result.module.iconurl" [modname]="result.module.name" [colorize]="false" />
+                } @else if (result.component) {
+                    <img [url]="result.component.iconurl" alt="" class="result-icon" core-external-content
+                        [component]="result.component.name">
+                }
+                <core-format-text [text]="result.title" />
+            </p>
+        }
+        @if (result.content && !result.course && !result.user) {
+            <core-format-text [text]="result.content" />
+        }
+        @if (renderedContext) {
+            <div class="result-context-wrapper">
+                @if (renderedContext.courseName) {
+                    <div class="result-context">
+                        <ion-icon name="ucg-graduation-cap" aria-hidden="true" />
+                        <core-format-text [text]="renderedContext.courseName" />
+                    </div>
+                }
+                @if (renderedContext.userName) {
+                    <div class="result-context">
+                        <ion-icon name="fas-user" aria-hidden="true" />
+                        <span>{{ 'core.search.resultby' | translate: { $a: renderedContext.userName } }}</span>
+                    </div>
+                }
+            </div>
+        }
+    </ion-label>
+</ion-item>

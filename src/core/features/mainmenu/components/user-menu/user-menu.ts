@@ -1,0 +1,344 @@
+// (C) Copyright 2015 Moodle Pty Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import { CoreConstants } from '@/core/constants';
+import { CoreSharedModule } from '@/core/shared.module';
+import { Component, OnDestroy, OnInit, Type, viewChildren } from '@angular/core';
+import { CoreSiteInfo } from '@classes/sites/unauthenticated-site';
+import { CoreFilter } from '@features/filter/services/filter';
+import { CoreUserAuthenticatedSupportConfig } from '@features/user/classes/support/authenticated-support-config';
+import { CoreUserSupport } from '@features/user/services/support';
+import { CoreUser, CoreUserProfile } from '@features/user/services/user';
+import {
+    CoreUserProfileListActionHandlerData,
+    CoreUserDelegate,
+    CoreUserProfileHandlerType,
+    CoreUserDelegateContext,
+    CoreUserProfileListHandlerData,
+} from '@features/user/services/user-delegate';
+import { CoreModals } from '@services/overlays/modals';
+import { CoreNavigator } from '@services/navigator';
+import { CoreSites } from '@services/sites';
+import { ModalController, Translate } from '@singletons';
+import { Subscription } from 'rxjs';
+import { CoreLoginHelper } from '@features/login/services/login-helper';
+import { CoreAlerts } from '@services/overlays/alerts';
+import { CoreDynamicComponent } from '@components/dynamic-component/dynamic-component';
+import { CorePromiseUtils } from '@static/promise-utils';
+import type { ReloadableComponent } from '@coretypes/reloadable-component';
+import { CoreCustomMenu, CoreCustomMenuItem } from '@features/mainmenu/services/custommenu';
+import { CoreCustomMenuItemComponent } from '../custom-menu-item/custom-menu-item';
+import { CORE_SETTINGS_PREFERENCES_PAGE_NAME } from '@features/settings/constants';
+
+/**
+ * Component to display a user menu.
+ */
+@Component({
+    selector: 'core-main-menu-user-menu',
+    templateUrl: 'user-menu.html',
+    styleUrl: 'user-menu.scss',
+    imports: [
+        CoreSharedModule,
+        CoreCustomMenuItemComponent,
+    ],
+})
+export class CoreMainMenuUserMenuComponent implements OnInit, OnDestroy {
+
+    readonly dynamicComponents = viewChildren<CoreDynamicComponent<ReloadableComponent>>(CoreDynamicComponent);
+
+    siteInfo?: CoreSiteInfo;
+    siteName = '';
+    siteUrl?: string;
+    displaySiteUrl = false;
+    handlers: HandlerData[] = [];
+    customItems?: CoreCustomMenuItem[];
+    customMenuOverrideComponent?: Type<unknown>;
+    accountHandlers: HandlerData[] = [];
+    handlersLoaded = false;
+    user?: CoreUserProfile;
+    displaySwitchAccount = true;
+    displayContactSupport = false;
+    removeAccountOnLogout = false;
+
+    protected siteId?: string;
+    protected subscription!: Subscription;
+
+    /**
+     * @inheritdoc
+     */
+    async ngOnInit(): Promise<void> {
+        const currentSite = CoreSites.getRequiredCurrentSite();
+        this.siteId = currentSite.getId();
+        this.siteInfo = currentSite.getInfo();
+        this.siteName = await currentSite.getSiteName();
+        this.siteUrl = currentSite.getURL();
+        this.displaySwitchAccount = !currentSite.isFeatureDisabled('NoDelegate_SwitchAccount');
+        this.displayContactSupport = new CoreUserAuthenticatedSupportConfig(currentSite).canContactSupport();
+        this.removeAccountOnLogout = !!CoreConstants.CONFIG.removeaccountonlogout;
+        this.displaySiteUrl = currentSite.shouldDisplayInformativeLinks();
+
+        this.customMenuOverrideComponent = await CoreCustomMenu.getCustomItemComponent();
+
+        await this.loadCustomMenuItems();
+
+        await this.loadData();
+    }
+
+    /**
+     * Load data.
+     */
+    async loadData(): Promise<void> {
+        if (!this.siteInfo) {
+            return;
+        }
+
+        try {
+            this.user = await CoreUser.getProfile(this.siteInfo.userid);
+        } catch {
+            this.user = {
+                id: this.siteInfo.userid,
+                fullname: this.siteInfo.fullname,
+                profileimageurl: this.siteInfo.userpictureurl,
+            };
+        }
+
+        // Load the handlers.
+        const defaultComponentData = {
+            user: this.user,
+            context: CoreUserDelegateContext.USER_MENU,
+        };
+
+        this.subscription = CoreUserDelegate.getProfileHandlersFor(this.user, CoreUserDelegateContext.USER_MENU)
+            .subscribe((handlers) => {
+                if (!this.user) {
+                    return;
+                }
+
+                let newHandlers = handlers
+                    .filter((handler) => handler.type === CoreUserProfileHandlerType.LIST_ITEM)
+                    .map((handler) => ({
+                        name: handler.name,
+                        ...handler.data,
+                        componentData: 'componentData' in handler.data ? {
+                            ...defaultComponentData,
+                            ...(handler.data.componentData || {}),
+                        } : undefined,
+                    }));
+
+                // Only update handlers if they have changed, to prevent a blink effect.
+                if (newHandlers.length !== this.handlers.length ||
+                        JSON.stringify(newHandlers) !== JSON.stringify(this.handlers)) {
+                    this.handlers = newHandlers;
+                }
+
+                newHandlers = handlers
+                    .filter((handler) => handler.type === CoreUserProfileHandlerType.LIST_ACCOUNT_ITEM)
+                    .map((handler) => ({
+                        name: handler.name,
+                        ...handler.data,
+                        componentData: 'componentData' in handler.data ? {
+                            ...defaultComponentData,
+                            ...(handler.data.componentData || {}),
+                        } : undefined,
+                    }));
+
+                // Only update handlers if they have changed, to prevent a blink effect.
+                if (newHandlers.length !== this.accountHandlers.length ||
+                        JSON.stringify(newHandlers) !== JSON.stringify(this.accountHandlers)) {
+                    this.accountHandlers = newHandlers;
+                }
+
+                this.handlersLoaded = CoreUserDelegate.areHandlersLoaded(this.user.id, CoreUserDelegateContext.USER_MENU);
+            });
+    }
+
+    /**
+     * Refresh the data.
+     *
+     * @param event Event.
+     * @returns Promise resolved when done.
+     */
+    async refreshData(event?: HTMLIonRefresherElement): Promise<void> {
+        await CorePromiseUtils.ignoreErrors(Promise.all([
+            this.user ? CoreUser.invalidateUserCache(this.user.id) : Promise.resolve(),
+            ...(this.dynamicComponents()?.map((component) =>
+                Promise.resolve(component.callComponentMethod('invalidateContent'))) || []),
+        ]));
+
+        await this.loadData();
+
+        await CorePromiseUtils.allPromisesIgnoringErrors(
+            this.dynamicComponents()?.map((component) => Promise.resolve(component.callComponentMethod('reloadContent'))),
+        );
+
+        event?.complete();
+    }
+
+    /**
+     * Load custom menu items.
+     */
+    protected async loadCustomMenuItems(): Promise<void> {
+        this.customItems = await CoreCustomMenu.getUserCustomMenuItems();
+    }
+
+    /**
+     * Opens User profile page.
+     *
+     * @param event Click event.
+     */
+    async openUserProfile(event: Event): Promise<void> {
+        if (!this.siteInfo) {
+            return;
+        }
+
+        await this.close(event);
+
+        CoreNavigator.navigateToSitePath('user/about', {
+            params: {
+                userId: this.siteInfo.userid,
+            },
+        });
+    }
+
+    /**
+     * Opens preferences.
+     *
+     * @param event Click event.
+     */
+    async openPreferences(event: Event): Promise<void> {
+        await this.close(event);
+
+        CoreNavigator.navigateToSitePath(CORE_SETTINGS_PREFERENCES_PAGE_NAME);
+    }
+
+    /**
+     * A handler was clicked.
+     *
+     * @param event Click event.
+     * @param handler Handler that was clicked.
+     */
+    async handlerClicked(event: Event, handler: CoreUserProfileListActionHandlerData): Promise<void> {
+        if (!this.user) {
+            return;
+        }
+
+        await this.close(event);
+
+        handler.action(event, this.user, CoreUserDelegateContext.USER_MENU);
+    }
+
+    /**
+     * Contact site support.
+     *
+     * @param event Click event.
+     */
+    async contactSupport(event: Event): Promise<void> {
+        await this.close(event);
+        await CoreUserSupport.contact();
+    }
+
+    /**
+     * Logout the user.
+     *
+     * @param event Click event
+     */
+    async logout(event: Event): Promise<void> {
+        if (this.removeAccountOnLogout) {
+            // Ask confirm.
+            const siteName = this.siteName ?
+                await CoreFilter.formatText(this.siteName, { clean: true, singleLine: true, filter: false }, [], this.siteId) :
+                '';
+
+            try {
+                await CoreAlerts.confirmDelete(Translate.instant('core.login.confirmdeletesite', { sitename: siteName }));
+            } catch {
+                // User cancelled, stop.
+                return;
+            }
+        }
+
+        await this.close(event);
+
+        await CoreSites.logout({
+            forceLogout: true,
+            removeAccount: this.removeAccountOnLogout,
+        });
+    }
+
+    /**
+     * Show account selector.
+     *
+     * @param event Click event
+     */
+    async switchAccounts(event: Event): Promise<void> {
+        const thisModal = await ModalController.getTop();
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const { CoreLoginSitesModalComponent } = await import('@features/login/components/sites-modal/sites-modal');
+
+        const closeAll = await CoreModals.openSideModal<boolean>({
+            component: CoreLoginSitesModalComponent,
+            cssClass: 'core-modal-lateral core-modal-lateral-sm',
+        });
+
+        if (thisModal && closeAll) {
+            await ModalController.dismiss(undefined, undefined, thisModal.id);
+        }
+    }
+
+    /**
+     * Add account.
+     *
+     * @param event Click event
+     */
+    async addAccount(event: Event): Promise<void> {
+        await this.close(event);
+
+        await CoreLoginHelper.goToAddSite(true, true);
+    }
+
+    /**
+     * Helper function to cast to the proper type in the template.
+     *
+     * @param handler Variable to cast.
+     * @returns Casted variable.
+     */
+    castHandlerType(handler: HandlerData): HandlerData {
+        return handler;
+    }
+
+    /**
+     * Close modal.
+     *
+     * @param event Event.
+     */
+    async close(event: Event): Promise<void> {
+        event.preventDefault();
+        event.stopPropagation();
+
+        await ModalController.dismiss();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    ngOnDestroy(): void {
+        this.subscription?.unsubscribe();
+    }
+
+}
+
+type HandlerData = CoreUserProfileListHandlerData & { name: string };

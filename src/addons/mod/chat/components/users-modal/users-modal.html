@@ -1,0 +1,37 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            <h1>{{ 'addon.mod_chat.currentusers' | translate }}</h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="closeModal()" [ariaLabel]="'core.close' | translate">
+                <ion-icon slot="icon-only" name="fas-xmark" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <core-loading [hideUntil]="usersLoaded">
+        @for (user of users; track user.id) {
+            <ion-item class="ion-text-wrap" [class.addon-mod-chat-user]="currentUserId !== user.id && isOnline()">
+
+                <core-user-avatar [user]="user" slot="start" [linkProfile]="false" />
+                <ion-label>
+                    <p class="item-heading">{{ user.fullname }}</p>
+                    @if (currentUserId !== user.id && isOnline()) {
+
+                        <ion-button fill="clear" (click)="talkTo(user)">
+                            <ion-icon name="ucg-messages-square" slot="start" aria-hidden="true" />
+                            {{ 'addon.mod_chat.talk' | translate }}
+                        </ion-button>
+                        <ion-button fill="clear" (click)="beepTo(user)">
+                            <ion-icon name="ucg-notification-03" slot="start" aria-hidden="true" />
+                            {{ 'addon.mod_chat.beep' | translate }}
+                        </ion-button>
+
+                    }
+                </ion-label>
+            </ion-item>
+        }
+    </core-loading>
+</ion-content>

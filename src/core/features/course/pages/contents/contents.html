@@ -1,0 +1,13 @@
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!dataLoaded || updatingData || !displayRefresher" (ionRefresh)="doRefresh($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+
+    <core-loading [hideUntil]="dataLoaded && !updatingData" placeholderType="column" placeholderHeight="128px">
+        @if (dataLoaded && sections) {
+            <core-course-format [course]="course" [sections]="sections" [initialSectionId]="sectionId"
+                [initialSectionNumber]="sectionNumber" [initialBlockInstanceId]="blockInstanceId" [moduleId]="moduleId"
+                class="core-course-format-{{course.format}}" [isGuest]="isGuest" />
+        }
+    </core-loading>
+</ion-content>

@@ -1,0 +1,82 @@
+@use "src/theme/globals" as *;
+
+:host {
+    --course-storage-max-activity-height: 120px;
+
+    ion-card ion-item.size {
+        --inner-padding-end: 0px;
+    }
+
+    ion-card.section {
+        ion-item.card-header {
+            padding: 0;
+            --border-width: 0px;
+
+            .item-heading {
+                font: var(--mdl-typography-heading4-font);
+                min-height: auto;
+            }
+
+            ion-icon.expandable-status-icon {
+                margin-inline-end: var(--mdl-spacing-2);
+                background-color: var(--core-accordion-toggle-background);
+                padding: var(--mdl-spacing-1);
+                border-radius: 50%;
+                &:hover {
+                    background: var(--secondary);
+                }
+            }
+        }
+
+        ion-card-content {
+            padding: 0;
+
+            .core-course-storage-activity ion-label {
+                p.item-heading {
+                    position: relative;
+                    max-height: var(--course-storage-max-activity-height);
+                    overflow: hidden;
+                    ::ng-deep * {
+                        pointer-events: none !important;
+                    }
+
+                    &:before {
+                        content: '';
+                        height: var(--course-storage-max-activity-height);
+                        position: absolute;
+                        @include position(0, 0, null, 0);
+                        background: linear-gradient(to bottom, rgba(var(--background-gradient-rgb), 0) calc(100% - 30px), rgba(var(--background-gradient-rgb), 1) calc(100% - 20px));
+                        z-index: 6;
+                        pointer-events: none;
+                    }
+                }
+            }
+        }
+    }
+
+    .ripple-parent {
+        position: relative;
+        ion-ripple-effect {
+            z-index: 1;
+        }
+    }
+}
+
+ion-badge {
+    ion-icon {
+        @include margin-horizontal(null, 8px);
+    }
+}
+
+ion-item core-mod-icon {
+    --module-icon-size: 24px;
+    --module-legacy-icon-size: 16px;
+
+    --margin-vertical: 8px;
+    --margin-end: 8px;
+}
+
+.storage-buttons {
+    display: flex;
+    align-items: center;
+}

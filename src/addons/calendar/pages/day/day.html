@@ -1,0 +1,86 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'addon.calendar.calendarevents' | translate }}</h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="openFilter()" [ariaLabel]="'core.filter' | translate">
+                <ion-icon slot="icon-only" name="fas-filter" aria-hidden="true" />
+            </ion-button>
+            <core-context-menu>
+                @if (!selectedDayIsCurrent()) {
+                    <core-context-menu-item [priority]="900" [content]="'addon.calendar.today' | translate" iconAction="fas-calendar-day"
+                        (action)="goToCurrentDay()" />
+                }
+                <core-context-menu-item [hidden]="!loaded || !selectedDayHasOffline() || !isOnline()" [priority]="400"
+                    [content]="'core.settings.synchronizenow' | translate" (action)="doRefresh(undefined, $event)" [iconAction]="syncIcon"
+                    [closeOnClick]="false" />
+            </core-context-menu>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!loaded" (ionRefresh)="doRefresh($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+
+    <core-loading [hideUntil]="loaded" placeholderType="column" placeholderHeight="70px" [placeholderLimit]="8">
+        <div class="core-swipe-slides-container">
+            <!-- Period name and arrows to navigate. -->
+            <ion-grid class="ion-no-padding">
+                <ion-row class="ion-align-items-center">
+                    <ion-col class="ion-text-start">
+                        <ion-button fill="clear" (click)="loadPrevious()" [ariaLabel]="'addon.calendar.dayprev' | translate">
+                            <ion-icon name="fas-chevron-left" slot="icon-only" aria-hidden="true" />
+                        </ion-button>
+                    </ion-col>
+                    <ion-col class="ion-text-center addon-calendar-period">
+                        <h2>{{ periodName }}</h2>
+                    </ion-col>
+                    <ion-col class="ion-text-end">
+                        <ion-button fill="clear" (click)="loadNext()" [ariaLabel]="'addon.calendar.daynext' | translate">
+                            <ion-icon name="fas-chevron-right" slot="icon-only" aria-hidden="true" />
+                        </ion-button>
+                    </ion-col>
+                </ion-row>
+            </ion-grid>
+
+            <core-swipe-slides [manager]="manager">
+                <ng-template let-day="item">
+                    <core-loading [hideUntil]="day.loaded" placeholderType="column" placeholderHeight="70px" [placeholderLimit]="8">
+                        <!-- There is data to be synchronized -->
+                        @if (day.hasOffline) {
+                            <div class="list-item-limited-width">
+                                <core-alert-card type="warning"
+                                    [message]="'core.hasdatatosync' | translate:{$a: 'core.day' | translate}" />
+                            </div>
+                        }
+
+                        @if (!day.filteredEvents || !day.filteredEvents.length) {
+                            <core-empty-box icon="fas-calendar" [message]="'addon.calendar.noevents' | translate" />
+                        } @else {
+                            <ion-list class="list-item-limited-width">
+                                @for (event of day.filteredEvents; track event.id) {
+                                    <addon-calendar-event-card [event]="event" (onEventClicked)="gotoEvent(event.id, day)" />
+                                }
+                            </ion-list>
+                        }
+                    </core-loading>
+                </ng-template>
+            </core-swipe-slides>
+        </div>
+    </core-loading>
+
+    <!-- Create a calendar event. -->
+    @if (canCreate && loaded) {
+        <ion-fab slot="fixed" core-fab vertical="bottom" horizontal="end">
+            <ion-fab-button (click)="openEdit()" [attr.aria-label]="'addon.calendar.newevent' | translate">
+                <ion-icon name="fas-plus" aria-hidden="true" />
+                <span class="sr-only">{{ 'addon.calendar.newevent' | translate }}</span>
+            </ion-fab-button>
+        </ion-fab>
+    }
+</ion-content>

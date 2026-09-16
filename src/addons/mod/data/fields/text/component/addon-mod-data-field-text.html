@@ -1,0 +1,15 @@
+@if (inputMode && form) {
+    <span [formGroup]="form">
+        @if (editMode) {
+            <span [core-mark-required]="field.required" class="core-mark-required"></span>
+        }
+        <ion-input type="text" [formControlName]="'f_'+field.id" [placeholder]="field.name" />
+        @if (error && editMode) {
+            <core-input-errors [control]="form.controls['f_'+field.id]" [errorText]="error" />
+        }
+    </span>
+}
+
+@if (displayMode && value && value.content) {
+    <span>{{ value.content }}</span>
+}

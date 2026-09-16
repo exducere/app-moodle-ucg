@@ -1,0 +1,123 @@
+// (C) Copyright 2015 Moodle Pty Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import { AfterViewInit, Component, OnDestroy, signal, viewChild, WritableSignal } from '@angular/core';
+import { AddonBadges, AddonBadgesUserBadge } from '../../services/badges';
+import { CoreSites } from '@services/sites';
+import { CorePromiseUtils } from '@static/promise-utils';
+import { CoreSplitViewComponent } from '@components/split-view/split-view';
+import { CoreNavigator } from '@services/navigator';
+import { CoreListItemsManager } from '@classes/items-management/list-items-manager';
+import { AddonBadgesUserBadgesSource } from '@addons/badges/classes/user-badges-source';
+import { CoreRoutedItemsManagerSourcesTracker } from '@classes/items-management/routed-items-manager-sources-tracker';
+import { CoreAnalytics, CoreAnalyticsEventType } from '@services/analytics';
+import { CoreTime } from '@static/time';
+import { Translate } from '@singletons';
+import { CoreAlerts } from '@services/overlays/alerts';
+import { CoreSharedModule } from '@/core/shared.module';
+
+/**
+ * Page that displays the list of calendar events.
+ */
+@Component({
+    selector: 'page-addon-badges-user-badges',
+    templateUrl: 'user-badges.html',
+    imports: [
+        CoreSharedModule,
+    ],
+})
+export default class AddonBadgesUserBadgesPage implements AfterViewInit, OnDestroy {
+
+    readonly currentTime = signal(0);
+    readonly badges: WritableSignal<CoreListItemsManager<AddonBadgesUserBadge, AddonBadgesUserBadgesSource>>;
+
+    readonly splitView = viewChild.required(CoreSplitViewComponent);
+
+    protected logView: () => void;
+    protected courseId: number;
+    protected userId: number;
+
+    constructor() {
+        this.courseId = CoreNavigator.getRouteNumberParam('courseId') ?? 0; // Use 0 for site badges.
+        this.userId = CoreNavigator.getRouteNumberParam('userId') ?? CoreSites.getCurrentSiteUserId();
+
+        if (this.courseId === CoreSites.getCurrentSiteHomeId()) {
+            // Use courseId 0 for site home, otherwise the site doesn't return site badges.
+            this.courseId = 0;
+        }
+
+        this.badges = signal(new CoreListItemsManager(
+            CoreRoutedItemsManagerSourcesTracker.getOrCreateSource(AddonBadgesUserBadgesSource, [this.courseId, this.userId]),
+            AddonBadgesUserBadgesPage,
+        ));
+
+        this.logView = CoreTime.once(() => {
+            CoreAnalytics.logEvent({
+                type: CoreAnalyticsEventType.VIEW_ITEM_LIST,
+                ws: 'core_badges_view_user_badges',
+                name: Translate.instant('addon.badges.badges'),
+                data: { courseId: this.courseId, category: 'badges' },
+                url: '/badges/mybadges.php',
+            });
+        });
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async ngAfterViewInit(): Promise<void> {
+        await this.fetchInitialBadges();
+
+        this.badges().start(this.splitView());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    ngOnDestroy(): void {
+        this.badges().destroy();
+    }
+
+    /**
+     * Refresh the badges.
+     *
+     * @param refresher Refresher.
+     */
+    async refreshBadges(refresher?: HTMLIonRefresherElement): Promise<void> {
+        await CorePromiseUtils.ignoreErrors(
+            AddonBadges.invalidateUserBadges(this.courseId, this.userId),
+        );
+        await CorePromiseUtils.ignoreErrors(this.badges().reload());
+
+        refresher?.complete();
+    }
+
+    /**
+     * Obtain the initial list of badges.
+     */
+    private async fetchInitialBadges(): Promise<void> {
+        this.currentTime.set(CoreTime.timestamp());
+
+        try {
+            await this.badges().reload();
+
+            this.logView();
+        } catch (message) {
+            CoreAlerts.showError(message, { default: 'Error loading badges' });
+
+            this.badges().reset();
+        }
+    }
+
+}

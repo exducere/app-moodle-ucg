@@ -1,0 +1,11 @@
+@use "src/theme/globals" as *;
+
+:host {
+    .addon-mod_scorm-attempt-summary ion-item > p {
+        font-size: var(--text-size);
+    }
+
+    .addon-mod_scorm-toc ion-icon {
+        @include margin(4px, 8px, null, null);
+    }
+}

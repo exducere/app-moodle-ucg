@@ -1,0 +1,29 @@
+<ion-item class="ion-text-wrap" lines="inset" [detail]="false" [button]="isExpandable()" [attr.aria-expanded]="isExpanded()"
+    [attr.aria-controls]="'core-report-builder-column-' + rowIndex()"
+    [attr.aria-label]="(isExpanded() ? 'core.hidecolumns' : 'core.showcolumns') | translate" (click)="toggleRow()">
+    <ion-label>
+        @if (columnIndex() !== 0 || (columnIndex() === 0 && showFirstTitle())) {
+            <p class="item-heading">{{ header() }}</p>
+        }
+        @let columnData = column();
+        @if (columnIndex() === 0) {
+            <h2>
+                @if (columnIsString()) {
+                    <core-format-text [text]="columnData" [contextLevel]="contextLevel()" [contextInstanceId]="contextInstanceId()" />
+                } @else {
+                    {{ columnData }}
+                }
+            </h2>
+        } @else {
+            @if (columnIsString()) {
+                <core-format-text [text]="columnData" [contextLevel]="contextLevel()" [contextInstanceId]="contextInstanceId()" />
+            } @else {
+                {{ columnData }}
+            }
+        }
+    </ion-label>
+    @if (isExpandable()) {
+        <ion-icon [class.expandable-status-icon-expanded]="!isExpanded()" slot="end" aria-hidden="true" name="fas-chevron-up"
+            class="expandable-status-icon" flip-rtl />
+    }
+</ion-item>

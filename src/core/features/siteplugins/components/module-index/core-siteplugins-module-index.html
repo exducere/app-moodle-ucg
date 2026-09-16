@@ -1,0 +1,29 @@
+<!-- Buttons to add to the header. -->
+<core-navbar-buttons slot="end">
+    @if (!courseContentsPage) {
+        <ion-button fill="clear" (click)="openModuleSummary()" aria-haspopup="true" [ariaLabel]="'core.info' | translate">
+            <ion-icon name="ucg-information-diamond" slot="icon-only" aria-hidden="true" />
+        </ion-button>
+    } @else {
+        <core-context-menu>
+            <core-context-menu-item [priority]="5000" [content]="'core.info' | translate" (action)="openModuleSummary()"
+                iconAction="ucg-information-diamond" />
+        </core-context-menu>
+    }
+</core-navbar-buttons>
+
+<!-- Activity info. -->
+@if (addDefaultModuleInfo) {
+    <core-course-module-info [module]="module" [courseId]="courseId" [component]="component" [componentId]="module.id" />
+}
+
+@if (component && method) {
+    <core-site-plugins-plugin-content [component]="component" [method]="method" [args]="args" [initResult]="initResult" [data]="jsData"
+        [pageTitle]="pageTitle" [preSets]="preSets" contextLevel="module" [contextInstanceId]="module?.id" [courseId]="courseId"
+        (onContentLoaded)="contentLoaded($event)" (onLoadingContent)="contentLoading()" />
+}
+
+@if (module) {
+    <core-course-module-navigation collapsible-footer [appearOnBottom]="collapsibleFooterAppearOnBottom" [courseId]="courseId"
+        [currentModuleId]="module.id" />
+}

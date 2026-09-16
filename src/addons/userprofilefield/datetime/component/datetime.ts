@@ -1,0 +1,97 @@
+// (C) Copyright 2015 Moodle Pty Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import { FormControl, Validators } from '@angular/forms';
+import { Component } from '@angular/core';
+
+import { CoreTime } from '@static/time';
+import { CoreUtils } from '@static/utils';
+import { AuthEmailSignupProfileField } from '@features/login/services/signup';
+import { CoreUserProfileField } from '@features/user/services/user';
+import { CoreUserProfileFieldBaseComponent } from '@features/user/classes/base-profilefield-component';
+import { CoreSharedModule } from '@/core/shared.module';
+
+/**
+ * Directive to render a datetime user profile field.
+ */
+@Component({
+    selector: 'addon-user-profile-field-datetime',
+    templateUrl: 'addon-user-profile-field-datetime.html',
+    imports: [
+        CoreSharedModule,
+    ],
+})
+export class AddonUserProfileFieldDatetimeComponent extends CoreUserProfileFieldBaseComponent<string | undefined> {
+
+    ionDateTimePresentation = 'date';
+    min?: string;
+    max?: string;
+    valueNumber?: number;
+    displayValue?: string;
+
+    /**
+     * @inheritdoc
+     */
+    protected initForNonEdit(field: CoreUserProfileField): void {
+        if (field.displayvalue) {
+            this.displayValue = field.displayvalue;
+
+            return;
+        }
+
+        this.valueNumber = Number(field.value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected initForEdit(field: AuthEmailSignupProfileField): void {
+        super.initForEdit(field);
+
+        // Check if it's only date or it has time too.
+        const hasTime = CoreUtils.isTrueOrOne(field.param3);
+
+        // Calculate format to use.
+        this.ionDateTimePresentation = hasTime ? 'date-time' : 'date';
+
+        // Check min value.
+        if (field.param1 && Number(field.param1)) {
+            this.min = field.param1;
+        }
+
+        // Check max value.
+        if (field.param2 && Number(field.param2)) {
+            this.max = field.param2;
+        }
+
+        this.min = this.min || CoreTime.getDatetimeDefaultMin();
+        this.max = this.max || CoreTime.getDatetimeDefaultMax();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected createFormControl(field: AuthEmailSignupProfileField): FormControl<string | undefined> {
+        const formData = {
+            value: field.defaultdata && field.defaultdata !== '0' ? field.defaultdata : undefined,
+            disabled: this.disabled,
+        };
+
+        return new FormControl(formData, {
+            validators: this.required && !field.locked ? Validators.required : null,
+            nonNullable: true,
+        });
+    }
+
+}

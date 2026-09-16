@@ -1,0 +1,247 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+
+        <ion-title>
+            <h1>{{ 'core.settings.developeroptions' | translate }}</h1>
+        </ion-title>
+
+        @if (siteId) {
+            <ion-buttons slot="end">
+                <ion-button fill="clear" (click)="copyInfo()" [ariaLabel]="'core.settings.copyinfo' | translate">
+                    <ion-icon slot="icon-only" name="fas-clipboard" aria-hidden="true" />
+                </ion-button>
+            </ion-buttons>
+        }
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-list class="list-item-limited-width">
+        <ion-item class="ion-text-wrap">
+            <ion-toggle [(ngModel)]="rtl" (ionChange)="RTLChanged()">
+                <p class="item-heading">Change text direction</p>
+                <p>{{ direction }}</p>
+            </ion-toggle>
+        </ion-item>
+        <ion-item class="ion-text-wrap">
+            <ion-toggle [(ngModel)]="forceSafeAreaMargins" (ionChange)="safeAreaChanged()">
+                <p class="item-heading">Force safe area margins</p>
+            </ion-toggle>
+        </ion-item>
+        @if (stagingSitesCount && enableStagingSites !== undefined) {
+            <ion-item class="ion-text-wrap">
+                <ion-toggle [(ngModel)]="enableStagingSites" (ionChange)="setEnabledStagingSites($event.detail.checked)">
+                    <p class="item-heading">Enable staging sites <ion-badge>{{stagingSitesCount}}</ion-badge></p>
+                </ion-toggle>
+            </ion-item>
+        }
+        <ion-item class="ion-text-wrap">
+            <ion-toggle [(ngModel)]="alwaysShowLoginForm" (ionChange)="alwaysShowLoginFormChanged()">
+                <p class="item-heading">Always show login form</p>
+            </ion-toggle>
+        </ion-item>
+        @if (siteId) {
+
+            <ion-item class="ion-text-wrap">
+                <ion-toggle [(ngModel)]="remoteStyles" (ionChange)="remoteStylesChanged()">
+                    <p class="item-heading">Enable remote styles <ion-badge>{{remoteStylesCount}}</ion-badge>
+                    </p>
+                </ion-toggle>
+            </ion-item>
+            <ion-item class="ion-text-wrap">
+                <ion-toggle [(ngModel)]="pluginStyles" (ionChange)="pluginStylesChanged()">
+                    <p class="item-heading">Enable site plugin styles <ion-badge>{{pluginStylesCount}}</ion-badge>
+                    </p>
+                </ion-toggle>
+            </ion-item>
+
+        }
+
+        @if (userToursEnabled) {
+            <ion-item class="ion-text-wrap">
+                <ion-label>
+                    <p class="item-heading">Reset user tours</p>
+                </ion-label>
+                <ion-button (click)="resetUserTours()" aria-label="Reset user tours" fill="clear" slot="end">
+                    <ion-icon slot="icon-only" aria-hidden="true" name="fas-repeat" />
+                </ion-button>
+            </ion-item>
+        }
+
+        <ion-item class="ion-text-wrap">
+            <ion-label>
+                <p class="item-heading">Invalidate caches</p>
+            </ion-label>
+            <ion-button (click)="invalidateCaches()" aria-label="Invalidate caches" fill="clear" slot="end">
+                <ion-icon slot="icon-only" aria-hidden="true" name="ucg-rotate-01" />
+            </ion-button>
+        </ion-item>
+
+        <ion-item class="ion-text-wrap">
+            <ion-label>
+                <p class="item-heading">Clean file storage</p>
+                <p>Clear deleted sites from file storage and temp folder</p>
+            </ion-label>
+            <ion-button (click)="clearFileStorage()" aria-label="Clear File Storage" fill="clear" slot="end">
+                <ion-icon slot="icon-only" aria-hidden="true" name="fas-broom" />
+            </ion-button>
+        </ion-item>
+
+        <ion-item class="ion-text-wrap" (click)="openErrorLog()" [detail]="true" button>
+            <ion-label>
+                <p class="item-heading">Error log</p>
+            </ion-label>
+        </ion-item>
+
+        @for (item of extraPageItems(); track item.page) {
+            <ion-item class="ion-text-wrap {{item.class ?? ''}}" (click)="openExtraItem(item)" [detail]="true" button>
+                <ion-label>
+                    <p class="item-heading">{{ item.title }}</p>
+                </ion-label>
+            </ion-item>
+        }
+
+        @if (siteId) {
+
+            <ion-item class="ion-text-wrap">
+                <ion-label>
+                    <p class="item-heading">Is admin</p>
+                    <p>
+                        @if (isAdmin) {
+                            {{ 'core.yes' | translate }}
+                        } @else {
+                            {{ 'core.no' | translate }}
+                        }
+                    </p>
+                </ion-label>
+            </ion-item>
+
+            @if (isManager !== undefined) {
+                <ion-item class="ion-text-wrap">
+                    <ion-label>
+                        <p class="item-heading">Is manager</p>
+                        <p>
+                            @if (isManager) {
+                                {{ 'core.yes' | translate }}
+                            } @else {
+                                {{ 'core.no' | translate }}
+                            }
+                        </p>
+                    </ion-label>
+                </ion-item>
+            }
+
+            <ion-item class="ion-text-wrap">
+                <ion-label>
+                    <p class="item-heading">WebService token</p>
+                    <p>{{ token }}</p>
+                </ion-label>
+            </ion-item>
+            <ion-item class="ion-text-wrap">
+                <ion-label>
+                    <p class="item-heading">Private token</p>
+                    @if (privateToken) {
+                        <p>{{ privateToken }}</p>
+                    } @else {
+                        <p>---</p>
+                    }
+                </ion-label>
+            </ion-item>
+            <ion-item class="ion-text-wrap">
+                <ion-label>
+                    <p class="item-heading">Files access key</p>
+                    @if (filesAccessKey) {
+                        <p>{{ filesAccessKey }}</p>
+                    } @else {
+                        <p>---</p>
+                    }
+                </ion-label>
+            </ion-item>
+
+            @if (privateToken) {
+                @if (autoLoginTimeBetweenRequests) {
+                    <ion-item class="ion-text-wrap">
+                        <ion-label>
+                            <p class="item-heading">Minimum time between auto-login requests</p>
+                            <p>{{ autoLoginTimeBetweenRequests | coreDuration }}</p>
+                        </ion-label>
+                    </ion-item>
+                }
+                <ion-item class="ion-text-wrap">
+                    <ion-label>
+                        <p class="item-heading">Last auto login in this device</p>
+                        @if (lastAutoLoginTime && lastAutoLoginTime > 0) {
+                            <p>{{ lastAutoLoginTime | coreTimeAgo }}</p>
+                            <ion-note class="core-text-sm">This value will reset when the app is restarted.</ion-note>
+                        } @else {
+                            <p>---</p>
+                        }
+                    </ion-label>
+                </ion-item>
+            }
+
+            <ion-item-divider>
+                <ion-label>
+                    <h2>Disabled features</h2>
+                </ion-label>
+            </ion-item-divider>
+            @for (feature of disabledFeatures; track feature) {
+                <ion-item class="ion-text-wrap">
+                    <ion-label>
+                        <p class="item-heading">{{ feature }}</p>
+                    </ion-label>
+                </ion-item>
+            } @empty {
+                <ion-item>
+                    <ion-label>There are no features disabled.</ion-label>
+                </ion-item>
+            }
+
+            <ion-item-divider>
+                <ion-label>
+                    <h2>WebService overrides</h2>
+                </ion-label>
+            </ion-item-divider>
+            @if (wsOverrides().length === 0) {
+                <ion-item>
+                    <ion-label>There are no overrides.</ion-label>
+                </ion-item>
+            } @else {
+                <ion-grid class="ion-text-wrap ion-padding-horizontal">
+                    @for (override of wsOverrides(); track $index) {
+                        <ion-row>
+                            <ion-col>{{ override.method }}</ion-col>
+                            <ion-col class="ion-text-end">{{ override.count }}</ion-col>
+                        </ion-row>
+                    }
+                    <ion-row>
+                        <ion-col><strong>Total</strong></ion-col>
+                        <ion-col class="ion-text-end"><strong>{{ totalOverrides() }}</strong></ion-col>
+                    </ion-row>
+                </ion-grid>
+            }
+
+            <ion-item-divider>
+                <ion-label>
+                    <h2>Site plugins</h2>
+                </ion-label>
+            </ion-item-divider>
+
+            @for (plugin of sitePlugins; track plugin) {
+                <ion-item class="ion-text-wrap">
+                    <ion-label>
+                        <p class="item-heading">{{ plugin.addon }} ({{plugin.component}})</p>
+                        <p>{{plugin.version}}</p>
+                    </ion-label>
+                </ion-item>
+            } @empty {
+                <ion-item>
+                    <ion-label>There are no site plugins installed</ion-label>
+                </ion-item>
+            }
+
+        }
+    </ion-list>
+</ion-content>

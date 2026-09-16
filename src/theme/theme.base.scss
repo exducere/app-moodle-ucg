@@ -1,0 +1,522 @@
+@import "./globals";
+
+:root.force-safe-area-margins {
+    --ion-safe-area-left: 40px;
+    --ion-safe-area-right: 40px;
+    --ion-safe-area-top: 40px;
+    --ion-safe-area-bottom: 40px;
+}
+
+:root {
+    --zoom-ratio: 1;
+    --zoom-level: calc(100% * var(--zoom-ratio));  // @deprecated since 5.1.
+    zoom: calc(100% * var(--zoom-ratio));
+
+    &.ios {
+        font-size: calc(100% * var(--zoom-ratio));
+    }
+
+    // Apply zoom ratio to safe area and keyboard height CSS variable.
+    // Also, store safe area variables as --root-safe-area-*.
+    // Contrary to the --ion-safe-area-* variables, these are never overridden.
+    --root-safe-area-left: calc(var(--ion-safe-area-left, 0px) / var(--zoom-ratio));
+    --root-safe-area-right: calc(var(--ion-safe-area-right, 0px) / var(--zoom-ratio));
+    --root-safe-area-top: calc(var(--ion-safe-area-top, 0px) / var(--zoom-ratio));
+    --root-safe-area-bottom: calc(var(--ion-safe-area-bottom, 0px) / var(--zoom-ratio));
+    --root-keyboard-height: calc(var(--keyboard-height, 0px) / var(--zoom-ratio));
+    & > body {
+        --ion-safe-area-left: var(--root-safe-area-left);
+        --ion-safe-area-right: var(--root-safe-area-right);
+        --ion-safe-area-top: var(--root-safe-area-top);
+        --ion-safe-area-bottom: var(--root-safe-area-bottom);
+        --keyboard-height: var(--root-keyboard-height);
+    }
+}
+
+a {
+    color: var(--core-link-color);
+    text-decoration: var(--core-link-decoration, underline);
+    cursor: pointer;
+}
+
+:root[dir=rtl] {
+    --rotate-expandable: rotate(-90deg);
+}
+
+// Common styles.
+.text-left           { text-align: left; }
+.text-right          { text-align: right; }
+.text-center         { text-align: center; }
+.text-justify        { text-align: justify; }
+.clearfix {
+    &:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+}
+
+.core-bold {
+    font-weight: bold;
+}
+
+.core-text-sm {
+    font: var(--mdl-typography-body-font-sm);
+}
+.core-text-md {
+    font: var(--mdl-typography-body-font-md);
+}
+.core-text-lg {
+    font: var(--mdl-typography-body-font-lg);
+}
+
+.img-responsive {
+    display: block;
+    max-width: 100%;
+    &[height] {
+        height: auto;
+    }
+}
+
+.opacity-hide { opacity: 0; }
+.core-big   { font-size: 115%; }
+.invisible { visibility: hidden; }
+
+.flex { display: flex; }
+.inline-block { display: inline-block; }
+.block { display: block; }
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.margin-bottom-sm { margin-bottom: 8px; }
+.margin-bottom-md { margin-bottom: 12px; }
+
+.font-bold { font-weight: bold; }
+.font-italic { font-style: italic; }
+.font-lg { font-size: 1.7rem; }
+.font-sm { font-size: 1.2rem; }
+
+@each $color-name, $unused in $colors {
+    .text-#{$color-name},
+    p.text-#{$color-name},
+    .text-#{$color-name} p {
+        color: var(--ion-color-#{$color-name}) !important;
+    }
+}
+
+// Ionic list.
+ion-list {
+    padding: 0 !important;
+}
+
+// Make sure pages do not overlap the bottom system bar.
+ion-app > ion-router-outlet > .ion-page:not(page-core-mainmenu),
+ion-app > ion-router-outlet > page-core-mainmenu > ion-tabs.placement-side > .tabs-inner,
+ion-app > ion-modal > .ion-page {
+    height: calc(100% - var(--ion-safe-area-bottom, 0px));
+    * {
+        --ion-safe-area-bottom: 0px;
+    }
+}
+
+// On tablets, Ionic unsets the safe area variables in modals.
+ion-app > ion-modal {
+    --ion-safe-area-bottom: inherit;
+}
+ion-app > ion-modal.core-modal-lateral {
+    --ion-safe-area-top: inherit;
+}
+
+:root[dir=ltr] body:not(.core-iframe-fullscreen) ion-tabs.placement-side .tabs-inner,
+:root[dir=ltr] body:not(.core-iframe-fullscreen) ion-tabs.placement-side .tabs-inner ion-content {
+    --ion-safe-area-left: 0px !important;
+}
+
+:root[dir=rtl] body:not(.core-iframe-fullscreen) ion-tabs.placement-side .tabs-inner,
+:root[dir=rtl] body:not(.core-iframe-fullscreen) ion-tabs.placement-side .tabs-inner ion-content {
+    --ion-safe-area-right: 0px !important;
+}
+
+ion-tabs.placement-bottom .tabs-inner {
+    --ion-safe-area-bottom: 0px !important;
+}
+
+core-tabs, core-tabs-outlet {
+    swiper-slide {
+        --background: var(--core-tab-background);
+        --color: var(--core-tab-color);
+        --border-color: var(--core-tab-border-color);
+        --color-active: var(--core-tab-color-active);
+        --border-color-active: var(--core-tab-border-color-active);
+        --color-selected: var(--border-color-active);
+        --font-weight-active: var(--core-tab-font-weight-active);
+    }
+}
+
+// Hidden submit button.
+.core-submit-hidden-enter {
+    position: absolute;
+    visibility: hidden;
+    left: -1000px;
+}
+
+// Note on foot of ion-input.
+.item .core-input-footnote {
+    width: 100%;
+    font-style: italic;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: var(--text-size);
+}
+
+// Item styles
+[aria-current="page"],
+.item.item-current {
+    @include border-start(var(--selected-item-border-width), solid,  var(--selected-item-color));
+    --padding-start: calc(16px - var(--selected-item-border-width));
+}
+
+// Extra text colors.
+.text-gray {
+    color: var(--gray-500);
+}
+.text-dimmed {
+    opacity: .7;
+}
+
+// Wait to load before showing the image.
+img[core-external-content]:not([src]) {
+    visibility: hidden;
+}
+
+.core-course-module-handler:not(.addon-mod-label-handler) .item-heading .filter_mathjaxloader_equation mjx-container {
+    display: inline !important;
+}
+
+.section-summary core-format-text img {
+    border-radius: var(--mdl-shape-borderRadius-lg);
+}
+
+.list-item-limited-width,
+ion-content.limited-width > :not([slot]) {
+    max-width: var(--list-item-max-width);
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+ion-content.limited-width > :not([slot]) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.limited-width > core-loading:not([slot]),
+.menu > core-loading:not([slot]) {
+    &.core-loading-loaded {
+        --contents-display: flex;
+        flex-direction: column;
+    }
+    min-height: 100%;
+}
+
+.core-anchor,
+core-format-text a {
+    color: var(--core-link-color);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+
+// Horizontal scrolling elements
+.core-horizontal-scroll {
+    display: block;
+    overflow-x: scroll;
+}
+
+// Text formats.
+// Highlight text.
+mark,
+.matchtext {
+    background-color: var(--text-hightlight-background-color);
+}
+
+// Monospaced font.
+.core-monospaced {
+    font-family: var(--mdl-typography-monospace-font);
+}
+
+.core-scanning-qr {
+    // Set color-scheme to 'normal', otherwise the camera isn't seen in Android.
+    color-scheme: normal !important;
+
+    .ion-page, ion-modal::part(content) {
+        background-color: transparent !important;
+        --background: transparent;
+    }
+
+    ion-router-outlet, ion-backdrop, ion-modal:not(.core-modal-fullscreen) {
+        display: none !important;
+    }
+}
+
+// Hide virtual utilities.
+.core-browser-copy-area {
+    display: none;
+}
+
+// Different levels of padding.
+@for $i from 0 through 15 {
+    .core-padding-#{$i} {
+        @include padding(null, null, null, 16px * $i);
+    }
+}
+
+details summary {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+textarea {
+    min-height: var(--a11y-sizing-minTargetSize);
+}
+
+textarea:not([core-auto-rows]) {
+    height: 200px;
+}
+
+.core-media-adapt-width {
+    max-width: 100%;
+}
+
+img.core-media-adapt-width {
+    height: auto;
+}
+
+audio.core-media-adapt-width {
+    width: 100%;
+}
+
+ion-item-divider.item,
+ion-item.item,
+td {
+    .expandable-status-icon {
+        font-size: 1.125rem;
+        @include core-transition(transform, 200ms);
+        @include margin-horizontal(null, 16px);
+
+        &.expandable-status-icon-expanded {
+            transform: var(--rotate-expandable);
+        }
+    }
+}
+
+// Change default outline.
+.ion-activatable,
+.clickable,
+.ion-focusable.ion-focused,
+.ion-selectable {
+    @include core-focus-background();
+}
+
+:not(.hydrated):not(.native-input):not(.native-textarea) { // Not an ionic component.
+    @include core-focus-outline();
+}
+
+// We need [class] to increase the specificity, See: https://ionicframework.com/docs/api/input#css-custom-properties
+ion-input[class],
+ion-textarea[class],
+ion-searchbar[class],
+core-rich-text-editor {
+    --placeholder-color: var(--ion-placeholder-color);
+    --placeholder-opacity: var(--mdl-placeholder-opacity);
+}
+
+// Disable scroll on parent ion contents to enabled PTR on the ones inside the splitview. See split-view component for more info.
+ion-content.disable-scroll-y::part(scroll) {
+    touch-action: auto;
+    overflow-y: hidden;
+    overscroll-behavior-y: auto;
+    z-index: auto;
+    will-change: auto;
+}
+
+@if ($core-login-hide-need-help) {
+    .core-login-need-help {
+        display: none !important;
+    }
+}
+
+ion-grid.core-no-grid > ion-row {
+    display: block;
+}
+
+.core-footer-shadow [collapsible-footer] {
+    box-shadow: var(--drop-shadow-top, none);
+    clip-path: inset(-8px 0px 0px 0px); // Only show shadow at top.
+}
+
+[collapsible-footer] {
+    transition: box-shadow 0.5s;
+    width: 100%;
+    bottom: 0;
+    z-index: 3;
+    display: block;
+    background-color: var(--core-collapsible-footer-background);
+
+    @include padding-horizontal(var(--ion-safe-area-left), var(--ion-safe-area-right));
+
+
+    .ion-margin {
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+
+    &.is-active {
+        height: var(--core-collapsible-footer-height, auto);
+        @include core-transition(all, 200ms);
+
+        &.footer-collapsed {
+            --core-collapsible-footer-height: 0px;
+            opacity: 0;
+        }
+        &.has-module-nav.footer-collapsed {
+            --core-collapsible-footer-height: auto;
+            opacity: 1;
+            core-course-module-navigation {
+                height: 0px;
+                opacity: 0;
+                @include core-transition(all, 200ms);
+            }
+
+        }
+        &.footer-expanded {
+            --core-collapsible-footer-height: auto;
+        }
+    }
+}
+
+@include media-breakpoint-up(md) {
+    .adaptable-buttons-row,
+    .adaptable-buttons-row-reverse {
+        display: flex;
+        flex-direction: row;
+        ion-button {
+            flex: 1;
+        }
+    }
+
+    // Buttons will be in reverse order when horizontal.
+    .adaptable-buttons-row-reverse {
+        flex-direction: row-reverse;
+    }
+}
+
+.has-spacer,
+.core-flex-fill {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    flex-grow: 1;
+
+    .spacer-top {
+        flex-grow: 1;
+        align-content: flex-end;
+    }
+    .spacer {
+        flex-grow: 1;
+    }
+}
+
+
+.core-flex-no-grow {
+    flex-grow: 0;
+}
+
+// Loader animation.
+.core-loading {
+    position: relative;
+    background-color: var(--loader-background-color);
+    color: transparent; // Hide contents.
+    overflow: hidden;
+    display: var(--loader-display);
+    border-radius: var(--loader-radius);
+    @include core-transition(all, 200ms);
+    min-height: 8px;
+    min-width: 50px;
+
+    // Hide contents.
+    > * {
+        opacity: 0;
+        @include core-transition(opacity, 200ms);
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: -45%;
+        height: 100%;
+        width: 45%;
+        background-image: linear-gradient(to left, rgb(var(--loader-shine) / 5%), rgb(var(--loader-shine) / 30%), rgb(var(--loader-shine) / 60%), rgb(var(--loader-shine) / 30%), rgb(var(--loader-shine) / 5%));
+        animation: loading 1s infinite;
+        display: block;
+        top: 0;
+        bottom: 0;
+    }
+}
+
+// Fix subtitles wider than video.
+video::-webkit-media-text-track-display {
+    white-space: normal !important;
+}
+
+*:fullscreen {
+    padding-top: var(--root-safe-area-top);
+    padding-left: var(--root-safe-area-left);
+    padding-bottom: var(--root-safe-area-bottom);
+    padding-right: var(--root-safe-area-right);
+}
+
+/**
+ * https://github.com/ionic-team/ionic-framework/blob/6ffbdbb3b2b69290cf25753d535bc7483bd7c6e8/BREAKING.md#css-utilities
+ */
+[hidden], .hidden {
+    display: none !important;
+}
+
+.x-scrollable {
+    overflow-x: auto;
+    display: block;
+}
+
+
+//
+// Screenreaders
+//
+
+.sr-only, .accesshide {
+    @include sr-only();
+
+    display: block !important;
+}
+
+.sr-only-focusable:active, .sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+}

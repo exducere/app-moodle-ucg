@@ -1,0 +1,71 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'core.settings.synchronization' | translate }}</h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <core-navbar-buttons>
+                <ion-button fill="clear" (click)="showInfo()" [ariaLabel]="'core.info' | translate">
+                    <ion-icon name="ucg-information-diamond" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+            </core-navbar-buttons>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content class="limited-width">
+    <core-loading [hideUntil]="sitesLoaded" placeholderType="column" placeholderHeight="128px" [placeholderLimit]="8">
+        <ion-list class="limited-width">
+            <ion-item-divider>
+                <ion-label>
+                    <h2>{{ 'core.settings.syncsettings' | translate }}</h2>
+                </ion-label>
+            </ion-item-divider>
+            <ion-item class="ion-text-wrap">
+                <ion-toggle [(ngModel)]="dataSaver" (ngModelChange)="syncOnlyOnWifiChanged()">
+                    {{ 'core.settings.syncdatasaver' | translate }}
+                </ion-toggle>
+            </ion-item>
+
+            @let online = isOnline();
+            @if (!online || (dataSaver && limitedConnection())) {
+                <core-alert-card type="warning" [message]="online
+                    ? ('core.settings.connectwifitosync' | translate)
+                    : ('core.settings.connecttosync' | translate)" />
+            } @else {
+
+                <ion-item-divider>
+                    <ion-label>
+                        <h2>{{ 'core.accounts' | translate }}</h2>
+                    </ion-label>
+                </ion-item-divider>
+
+                <core-sites-list [accountsList]="accountsList">
+                    <ng-template #siteLabel let-site="site">
+                        @if (site.loggedOut) {
+                            <p class="text-danger">{{ 'core.settings.logintosync' | translate }}</p>
+                        }
+                    </ng-template>
+
+                    <ng-template #siteItem let-site="site">
+                        @if (!site.loggedOut) {
+                            <core-button-with-spinner [loading]="isSynchronizing(site.id)" slot="end">
+                                <ion-button fill="clear" (click)="synchronize(site.id)"
+                                    [ariaLabel]="'core.settings.synchronizenow' | translate">
+                                    <ion-icon name="ucg-exchange-01" slot="icon-only" aria-hidden="true" />
+                                </ion-button>
+                            </core-button-with-spinner>
+                        } @else {
+                            <ion-button fill="clear" (click)="login(site.id)" [ariaLabel]="'core.login.login' | translate" slot="end">
+                                <ion-icon name="fas-right-to-bracket" slot="icon-only" aria-hidden="true" />
+                            </ion-button>
+                        }
+                    </ng-template>
+                </core-sites-list>
+
+            }
+        </ion-list>
+    </core-loading>
+</ion-content>

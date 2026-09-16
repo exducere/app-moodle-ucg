@@ -1,0 +1,56 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+
+        <ion-title>
+            @if (!editingProfile) {
+                <h1>{{ 'core.user.completeyourprofile' | translate }}</h1>
+            } @else {
+                <h1>{{ 'core.login.reconnecttosite' | translate }}</h1>
+            }
+        </ion-title>
+
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="showHelp()" [ariaLabel]="'core.help' | translate">
+                <ion-icon slot="icon-only" name="far-circle-question" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-list class="list-item-limited-width">
+        @if (!editingProfile) {
+
+            <ion-item class="ion-text-wrap">
+                <ion-label>
+                    <p>{{ 'core.user.completeprofilenotice' | translate }}</p>
+                </ion-label>
+            </ion-item>
+            <ion-button class="ion-text-wrap ion-margin" expand="block" (click)="openCompleteProfilePage()">
+                {{ 'core.user.completeprofile' | translate }}
+            </ion-button>
+
+        } @else {
+
+            <ion-item class="ion-text-wrap">
+                <ion-label>
+                    <p>{{ 'core.user.completeprofilereconnectinstructions' | translate }}</p>
+                </ion-label>
+            </ion-item>
+            <ion-button class="ion-text-wrap ion-margin" expand="block" (click)="login()">
+                {{ 'core.login.reconnect' | translate }}
+            </ion-button>
+
+        }
+        <ion-item class="ion-text-wrap">
+            <ion-label>
+                <p>{{ 'core.wanttochangesite' | translate }}</p>
+            </ion-label>
+        </ion-item>
+        <ion-button class="ion-text-wrap ion-margin" expand="block" fill="outline" (click)="logout()">
+            {{ logoutLabel | translate }}
+        </ion-button>
+    </ion-list>
+</ion-content>

@@ -1,0 +1,124 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-button fill="clear" (click)="cancel($event)" [ariaLabel]="'core.back' | translate" class="ion-back-button">
+                <ion-icon ios="chevron-back" md="arrow-back-sharp" slot="icon-only" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+
+        <ion-title>
+            <h1>{{ 'core.login.reconnect' | translate }}</h1>
+        </ion-title>
+
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="showHelp()" [ariaLabel]="'core.help' | translate">
+                <ion-icon slot="icon-only" name="far-circle-question" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding" (keydown)="keyDown($event)" (keyup)="keyUp($event)">
+    <core-loading [hideUntil]="!showLoading" placeholderType="imageandboxes">
+        @if (site) {
+            <div class="list-item-limited-width">
+                @if (!isLoggedOut) {
+                    <core-alert-card type="warning" class="core-login-reconnect-warning" [message]="'core.lostconnection' | translate" />
+                }
+
+                <div class="ion-text-wrap ion-text-center core-login-info-box">
+                    <div class="core-login-site">
+                        <core-site-logo siteNameMode="p" [showLogo]="!showUserAvatar" [site]="site" />
+
+                        @if (displaySiteUrl) {
+                            <p class="core-siteurl">{{site.siteUrl}}</p>
+                        }
+                    </div>
+
+                    <div class="core-login-user">
+                        <!-- Show user avatar. -->
+                        @if (showUserAvatar) {
+                            <core-user-avatar class="large-avatar" [user]="user" [linkProfile]="false" [siteId]="siteId" />
+                        }
+                        @if (user?.fullname) {
+                            <p class="core-login-fullname">
+                                <core-format-text [text]="user?.fullname" [filter]="false" />
+                            </p>
+                        }
+                    </div>
+                    @if (exceededAttemptsHTML && supportConfig && reconnectAttempts >= 3) {
+                        <core-login-exceeded-attempts [supportConfig]="supportConfig"
+                            [supportSubject]="'core.login.exceededloginattemptssupportsubject' | translate">
+                            <div [innerHTML]="exceededAttemptsHTML" (click)="exceededAttemptsClicked($event)"></div>
+                        </core-login-exceeded-attempts>
+                    }
+                </div>
+
+                <div class="core-login-methods">
+                    @if (currentLogin && currentLogin.provider) {
+                        <core-identity-provider [provider]="currentLogin.provider" [launchurl]="siteConfig?.launchurl"
+                            [redirectData]="redirectData" [siteUrl]="site.siteUrl" [siteId]="siteId" />
+                        @if (currentLogin.showOther) {
+                            <ion-accordion-group>
+                                <ion-accordion toggleIconSlot="start">
+                                    <ion-item class="ion-text-wrap" slot="header">
+                                        <ion-label>
+                                            <p class="item-heading">{{ 'core.login.morewaystologin' | translate }}</p>
+                                        </ion-label>
+                                    </ion-item>
+
+                                    <div slot="content">
+                                        <ng-template *ngTemplateOutlet="loginMethods" />
+                                    </div>
+                                </ion-accordion>
+                            </ion-accordion-group>
+                        }
+                    } @else {
+                        <ng-template *ngTemplateOutlet="loginMethods" />
+                    }
+                </div>
+            </div>
+        }
+    </core-loading>
+</ion-content>
+
+
+<ng-template #loginMethods>
+    @if (showLoginForm && !isBrowserSSO) {
+        <form [formGroup]="credForm" (ngSubmit)="login($event)" class="core-login-form" #reconnectForm>
+            <ion-item class="ion-margin-bottom" lines="inset">
+                <ion-input class="core-ioninput-password" name="password" type="password"
+                    placeholder="{{ 'core.login.password' | translate }}" formControlName="password" [clearOnEdit]="false"
+                    autocomplete="current-password" enterkeyhint="go" required="true" [attr.aria-label]="'core.login.password' | translate">
+                    <ion-input-password-toggle slot="end" showIcon="ucg-eye" hideIcon="ucg-eye-closed" />
+                </ion-input>
+            </ion-item>
+            <ion-button type="submit" expand="block" [disabled]="!credForm.valid" class="ion-margin core-login-login-button ion-text-wrap">
+                {{ 'core.login.loginbutton' | translate }}
+            </ion-button>
+
+            <!-- Forgotten password option. -->
+            @if (showForgottenPassword) {
+                <ion-button expand="block" fill="clear" class="core-login-forgotten-password core-button-as-link ion-text-wrap"
+                    (click)="forgottenPassword()">
+                    {{ 'core.login.forgotaccount' | translate }}
+                </ion-button>
+            }
+        </form>
+    }
+
+    @if (isBrowserSSO) {
+
+        <ion-button expand="block" (click)="openBrowserSSO()" class="ion-margin core-login-login-inbrowser-button ion-text-wrap">
+            {{ 'core.login.loginbutton' | translate }}
+            <ion-icon name="fas-up-right-from-square" slot="end" aria-hidden="true" />
+        </ion-button>
+        <p class="text-center core-login-inbrowser">{{ 'core.openinbrowserdescription' | translate }}</p>
+
+    }
+
+    <!-- Additional Login methods -->
+    @if (siteConfig) {
+        <core-login-methods [site]="site" [siteConfig]="siteConfig" [siteUrl]="site.siteUrl" [redirectData]="redirectData"
+            [showLoginForm]="showLoginForm" />
+    }
+</ng-template>

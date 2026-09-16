@@ -1,0 +1,81 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": false,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "importHelpers": true,
+    "target": "es2022",
+    "resolveJsonModule": true,
+    "lib": [
+      "es2021",
+      "dom"
+    ],
+    "types": [
+      "@moodlehq/cordova-plugin-file-transfer",
+      "@moodlehq/cordova-plugin-inappbrowser",
+      "@moodlehq/phonegap-plugin-push",
+      "cordova-plugin-file",
+      "cordova-plugin-moodleapp",
+      "cordova",
+      "dom-mediacapture-record",
+      "jest",
+      "node",
+      "resize-observer-browser",
+      "webpack-env"
+    ],
+    "paths": {
+      "@addons/*": [
+        "./src/addons/*"
+      ],
+      "@classes/*": [
+        "./src/core/classes/*"
+      ],
+      "@components/*": [
+        "./src/core/components/*"
+      ],
+      "@coretypes/*": [
+        "./src/core/types/*"
+      ],
+      "@directives/*": [
+        "./src/core/directives/*"
+      ],
+      "@features/*": [
+        "./src/core/features/*"
+      ],
+      "@guards/*": [
+        "./src/core/guards/*"
+      ],
+      "@pipes/*": [
+        "./src/core/pipes/*"
+      ],
+      "@services/*": [
+        "./src/core/services/*"
+      ],
+      "@singletons": [
+        "./src/core/singletons/index"
+      ],
+      "@static/*": [
+        "./src/core/static/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
+  }
+}

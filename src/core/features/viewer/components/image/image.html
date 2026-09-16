@@ -1,0 +1,39 @@
+<ion-content>
+    <swiper-container #swiperRef>
+        <swiper-slide>
+            @if (imageHTML()) {
+                <div class="swiper-zoom-container" [innerHTML]="imageHTML()"></div>
+            } @else {
+                <div class="swiper-zoom-container">
+                    @if (dataUrl()) {
+                        <img [src]="dataUrl()" [alt]="title()">
+                    } @else {
+                        <img [url]="image()" [alt]="title()" core-external-content [component]="component()" [componentId]="componentId()">
+                    }
+                </div>
+            }
+        </swiper-slide>
+    </swiper-container>
+</ion-content>
+<ion-footer>
+    <ion-row class="ion-justify-content-between ion-align-items-center ion-no-padding">
+        <ion-col size="auto">
+            <ion-button fill="clear" (click)="closeModal()" [ariaLabel]="'core.close' | translate">
+                <ion-icon name="fas-xmark" slot="icon-only" aria-hidden="true" />
+            </ion-button>
+        </ion-col>
+        <ion-col />
+        @if (swiper) {
+            <ion-col size="auto">
+                <ion-button fill="clear" [ariaLabel]="'core.zoomout' | translate" (click)="zoom(false)">
+                    <ion-icon name="fas-magnifying-glass-minus" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+            </ion-col>
+            <ion-col size="auto">
+                <ion-button fill="clear" [ariaLabel]="'core.zoomin' | translate" (click)="zoom(true)">
+                    <ion-icon name="fas-magnifying-glass-plus" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+            </ion-col>
+        }
+    </ion-row>
+</ion-footer>

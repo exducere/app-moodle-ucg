@@ -1,0 +1,96 @@
+// (C) Copyright 2015 Moodle Pty Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import { CoreSyncIcon } from '@/core/constants';
+import { Params } from '@angular/router';
+import { CoreRoutedItemsManagerSource } from '@classes/items-management/routed-items-manager-source';
+import { SHAREDFILES_PAGE_NAME } from '@features/sharedfiles/constants';
+import { CorePlatform } from '@services/platform';
+import {
+    CORE_SETTINGS_ABOUT_PAGE_NAME,
+    CORE_SETTINGS_GENERAL_PAGE_NAME,
+    CORE_SETTINGS_SPACE_USAGE_PAGE_NAME,
+    CORE_SETTINGS_SYNC_PAGE_NAME,
+} from '../constants';
+
+/**
+ * Provides a collection of setting sections.
+ */
+export class CoreSettingsSectionsSource extends CoreRoutedItemsManagerSource<CoreSettingsSection> {
+
+    /**
+     * @inheritdoc
+     */
+    protected async loadPageItems(): Promise<{ items: CoreSettingsSection[] }> {
+        const sections: CoreSettingsSection[] = [
+            {
+                name: 'core.settings.general',
+                path: CORE_SETTINGS_GENERAL_PAGE_NAME,
+                icon: 'ucg-wrench-01',
+            },
+            {
+                name: 'core.settings.spaceusage',
+                path: CORE_SETTINGS_SPACE_USAGE_PAGE_NAME,
+                icon: 'ucg-list-checks',
+            },
+            {
+                name: 'core.settings.synchronization',
+                path: CORE_SETTINGS_SYNC_PAGE_NAME,
+                icon: CoreSyncIcon.SYNC,
+            },
+        ];
+
+        if (CorePlatform.isIOS()) {
+            sections.push({
+                name: 'core.sharedfiles.sharedfiles',
+                path: `${SHAREDFILES_PAGE_NAME}/list/root`,
+                icon: 'fas-folder',
+                params: { manage: true },
+            });
+        }
+
+        sections.push({
+            name: 'core.settings.about',
+            path: CORE_SETTINGS_ABOUT_PAGE_NAME,
+            icon: 'ucg-id-card',
+        });
+
+        return { items: sections };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    getItemPath(section: CoreSettingsSection): string {
+        return section.path;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    getItemQueryParams(section: CoreSettingsSection): Params {
+        return section.params || {};
+    }
+
+}
+
+/**
+ * Settings section.
+ */
+export type CoreSettingsSection = {
+    name: string;
+    path: string;
+    icon: string;
+    params?: Params;
+};

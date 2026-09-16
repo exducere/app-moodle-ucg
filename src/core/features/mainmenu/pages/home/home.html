@@ -1,0 +1,97 @@
+<ion-content class="home-content-page">
+    <ion-refresher slot="fixed" [disabled]="!loaded" (ionRefresh)="doRefresh($event.target)">
+        <ion-refresher-content [pullingText]="'core.pulltorefresh' | translate" />
+    </ion-refresher>
+
+    <main class="home-layout">
+        <header class="home-greeting-section">
+            <div class="home-greeting-text">
+                <span class="home-panel-label">{{ 'core.mainmenu.panelcontrol' | translate }}</span>
+                <h1 class="home-welcome-name">
+                    {{ 'core.mainmenu.welcome' | translate }},
+                    <core-format-text [text]="siteUserName" contextLevel="system" [contextInstanceId]="0" />
+                </h1>
+            </div>
+            <core-user-menu-button class="home-user-button" />
+        </header>
+
+        <section class="home-tools" aria-label="Filtros de cursos">
+            <label class="sr-only" for="home-course-search">{{ 'core.mainmenu.searchcourse' | translate }}</label>
+            <div class="home-search-container">
+                <ion-icon name="ucg-search-01" class="home-search-icon" aria-hidden="true" />
+                <ion-input id="home-course-search" class="home-search-input" [(ngModel)]="textFilter"
+                    (ionInput)="filterTextChanged($event.target)" [placeholder]="'core.mainmenu.searchcourse' | translate"
+                    [clearInput]="true" />
+            </div>
+
+            <nav class="home-filter-tabs" aria-label="Estado de los cursos">
+                <button type="button" class="home-tab" [class.active]="filters.timeFilterSelected === 'allincludinghidden'"
+                    [attr.aria-pressed]="filters.timeFilterSelected === 'allincludinghidden'"
+                    (click)="selectFilter('allincludinghidden')">
+                    {{ 'core.mainmenu.allcourses' | translate }}
+                    <span aria-hidden="true">{{ filterCounts.allincludinghidden || 0 }}</span>
+                </button>
+
+                <button type="button" class="home-tab" [class.active]="filters.timeFilterSelected === 'inprogress'"
+                    [attr.aria-pressed]="filters.timeFilterSelected === 'inprogress'" (click)="selectFilter('inprogress')">
+                    {{ 'core.mainmenu.inprogress' | translate }}
+                    <span aria-hidden="true">{{ filterCounts.inprogress || 0 }}</span>
+                </button>
+
+                <button type="button" class="home-tab" [class.active]="filters.timeFilterSelected === 'past'"
+                    [attr.aria-pressed]="filters.timeFilterSelected === 'past'" (click)="selectFilter('past')">
+                    {{ 'core.mainmenu.past' | translate }}
+                    <span aria-hidden="true">{{ filterCounts.past || 0 }}</span>
+                </button>
+
+                @if (filters.show.favourite) {
+                    <button type="button" class="home-tab" [class.active]="filters.timeFilterSelected === 'favourite'"
+                        [attr.aria-pressed]="filters.timeFilterSelected === 'favourite'" (click)="selectFilter('favourite')">
+                        {{ 'core.mainmenu.favorite' | translate }}
+                        <span aria-hidden="true">{{ filterCounts.favourite || 0 }}</span>
+                    </button>
+                }
+            </nav>
+        </section>
+
+        <section class="home-dynamic-area" aria-live="polite">
+            <core-loading [hideUntil]="loaded">
+                @if (hasCourses && filteredCourses.length > 0) {
+                    <div class="home-section-heading">
+                        <div>
+                            <span class="home-section-eyebrow">{{ 'core.mainmenu.coursesavailable' | translate }}</span>
+                            <h2 id="home-current-courses">{{ 'core.mainmenu.currentcourses' | translate }}</h2>
+                        </div>
+                        <span class="home-section-count" aria-label="Cantidad de cursos">{{ filteredCourses.length }}</span>
+                    </div>
+
+                    <swiper-container class="home-courses-swiper" slides-per-view="auto" space-between="14" speed="450"
+                        grab-cursor="true" watch-slides-progress="true" role="region"
+                        aria-labelledby="home-current-courses">
+                        @for (course of filteredCourses; track course.id) {
+                            <swiper-slide class="home-course-slide">
+                                <core-courses-course-list-item [course]="course" layout="card"
+                                    [showDownload]="downloadCourseEnabled" />
+                            </swiper-slide>
+                        }
+                    </swiper-container>
+                }
+
+                @if (filteredCourses.length === 0) {
+                    <core-empty-box class="home-empty-box" image="assets/img/icons/courses.svg">
+                        @if (hasCourses) {
+                            <p class="item-heading">{{ 'addon.block_myoverview.noresult' | translate }}</p>
+                        } @else {
+                            <p class="item-heading">{{ 'addon.block_myoverview.nocoursesenrolled' | translate }}</p>
+                        }
+                    </core-empty-box>
+                }
+
+                <div class="home-recent-section">
+                    <addon-block-recentlyaccesseditems [block]="recentBlock()" contextLevel="user" title=""
+                        [instanceId]="userId" [horizontal]="true" />
+                </div>
+            </core-loading>
+        </section>
+    </main>
+</ion-content>

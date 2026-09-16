@@ -1,0 +1,30 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            <h1>{{ title }}</h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="closeModal()" [ariaLabel]="'core.close' | translate">
+                <ion-icon slot="icon-only" name="fas-xmark" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+    <core-format-text [text]="content" [component]="component" [componentId]="componentId" [filter]="filter" [contextLevel]="contextLevel"
+        [contextInstanceId]="instanceId" [courseId]="courseId" />
+
+    @if (files?.length) {
+        <ion-card>
+            <core-file *ngFor="let file of files" [file]="file" [component]="component" [componentId]="componentId" />
+        </ion-card>
+    }
+</ion-content>
+@if (displayCopyButton) {
+    <ion-footer>
+        <ion-button expand="block" fill="outline" (click)="copyText()">
+            <ion-icon name="fas-copy" aria-hidden="true" slot="start" />
+            {{ 'core.copytoclipboard' | translate }}
+        </ion-button>
+    </ion-footer>
+}

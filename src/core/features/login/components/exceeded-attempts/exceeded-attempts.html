@@ -1,0 +1,12 @@
+<core-alert-card type="danger">
+    <p>
+        <ng-content />
+    </p>
+    @if (canContactSupport()) {
+        <div buttons>
+            <ion-button fill="outline" color="medium" (click)="contactSupport()">
+                {{ 'core.contactsupport' | translate }}
+            </ion-button>
+        </div>
+    }
+</core-alert-card>

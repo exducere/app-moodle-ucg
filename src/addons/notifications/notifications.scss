@@ -1,0 +1,55 @@
+@use "src/theme/globals" as *;
+
+:host {
+    --icon-size: 32px;
+    --extra-icon-size: 12px;
+
+    ion-item ::ng-deep core-user-avatar {
+        --core-avatar-size: var(--icon-size);
+
+        .core-avatar-extra-img {
+            margin: 0 !important;
+            position: absolute;
+            right: -4px;
+            bottom: -4px;
+            --module-icon-padding: 0.2rem;
+        }
+
+        .core-avatar-extra-img {
+            background: var(--background-color);
+            border-radius: var(--mdl-shape-borderRadius-sm);
+            img {
+                max-width: var(--extra-icon-size);
+                max-height: var(--extra-icon-size);
+                width: var(--extra-icon-size);
+                height: var(--extra-icon-size);
+                display: block;
+            }
+        }
+    }
+
+    div.core-notification-icon {
+        max-width: var(--icon-size);
+        max-height:  var(--icon-size);
+        img {
+            width: var(--icon-size);
+            height:  var(--icon-size);
+            padding: 4px;
+        }
+        ion-icon {
+            font-size: var(--icon-size);
+        }
+        padding: 0px;
+        background: var(--background-color);
+        border-radius: var(--core-avatar-radius);
+        @include margin(6px, 8px, 6px, 0px);
+    }
+
+    .core-notification-img {
+        @include margin(6px, 8px, 6px, 0px);
+        width: var(--icon-size);
+        height: var(--icon-size);
+        object-fit: cover;
+        border-radius: var(--core-avatar-radius);
+    }
+}

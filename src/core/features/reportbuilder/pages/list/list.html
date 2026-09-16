@@ -1,0 +1,39 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'core.reportbuilder.reports' | translate }}</h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!loaded()" (ionRefresh)="refreshReports($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="loaded()">
+
+        @let items = reports();
+        @if (items?.length) {
+            <ion-list>
+                @for (report of items; track report.id) {
+                    <ion-item [detail]="true" class="ion-text-wrap" [button]="true"
+                        (click)="openReport(report)">
+                        <ion-label>
+                            <p class="item-heading">
+                                <core-format-text [clean]="true" [text]="report.name" [filter]="false" />
+                            </p>
+                            <p>{{ report.sourcename }}</p>
+                        </ion-label>
+                    </ion-item>
+                }
+            </ion-list>
+
+            <core-infinite-loading [enabled]="loaded() && hasMoreItems()" (action)="fetchMoreReports($event)"
+                [error]="loadMoreError()" />
+        } @else {
+            <core-empty-box icon="fas-rectangle-list" [message]="'core.course.nocontentavailable' | translate" />
+        }
+    </core-loading>
+</ion-content>

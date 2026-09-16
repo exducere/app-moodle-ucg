@@ -1,0 +1,19 @@
+@for (item of items(); track item) {
+    <ion-card>
+        <ion-item class="ion-text-wrap" [href]="item.url" core-link [capture]="true">
+            @if (item.user) {
+                <core-user-avatar [user]="item.user" slot="start" [linkProfile]="false" />
+            }
+
+            @if (item.iconUrl) {
+                <core-mod-icon [modicon]="item.iconUrl" slot="start" [showAlt]="false" />
+            }
+            <ion-label>
+                <p class="item-heading">{{ item.heading }}</p>
+                @for (text of item.details; track text) {
+                    <p>{{ text }}</p>
+                }
+            </ion-label>
+        </ion-item>
+    </ion-card>
+}

@@ -1,0 +1,67 @@
+@if (accountsList()) {
+    <ion-list class="core-sites-list">
+        @if (accountsList().currentSite) {
+            <ion-card>
+                <ng-container *ngTemplateOutlet="siteCardHeader; context: {site: accountsList().currentSite, isCurrentSite: true}" />
+
+                <ng-container *ngTemplateOutlet="siteItem; context: {site: accountsList().currentSite, isCurrentSite: true}" />
+
+                @for (site of accountsList().sameSite; track site.id) {
+                    <ng-container *ngTemplateOutlet="siteItem; context: {site: site, isCurrentSite: false}" />
+                }
+            </ion-card>
+        }
+
+        @for (sites of accountsList().otherSites; track sites[0]?.siteUrl) {
+            <ion-card>
+                <ng-container *ngTemplateOutlet="siteCardHeader; context: {site: sites[0], isCurrentSite: false}" />
+
+                @for (site of sites; track site.id) {
+                    <ng-container *ngTemplateOutlet="siteItem; context: {site: site, isCurrentSite: false}" />
+                }
+            </ion-card>
+        }
+
+    </ion-list>
+}
+
+<!-- Template to render the header of a site card. -->
+<ng-template #siteCardHeader let-site="site" let-isCurrentSite="isCurrentSite">
+    @if (site) {
+        <ion-item-divider sticky="true" class="core-sites-list-sitename ion-text-nowrap">
+            <ion-label class="ion-text-nowrap">
+                <h2>
+                    <core-format-text [text]="site.siteName" [clean]="true" [siteId]="site.id" />
+                </h2>
+                @if (displaySiteUrl(site)) {
+                    <p>
+                        <a [href]="site.siteUrl" core-link [autoLogin]="!!isCurrentSite">
+                            {{ site.siteUrlWithoutProtocol }}
+                        </a>
+                    </p>
+                }
+            </ion-label>
+        </ion-item-divider>
+    }
+</ng-template>
+
+<!-- Template to render a site item. -->
+<ng-template #siteItem let-site="site" let-isCurrentSite="isCurrentSite">
+    <ion-item [attr.button]="isSiteClickable(isCurrentSite) ? true : null" (click)="siteClicked($event, site, isCurrentSite)"
+        [attr.detail]="isSiteClickable(isCurrentSite) ? 'true' : 'false'" [class.item-current]="isCurrentSite">
+
+        <core-user-avatar [user]="site" slot="start" [linkProfile]="false" [siteId]="site.id" />
+
+        <ion-label class="ion-text-nowrap">
+            <p class="item-heading">{{site.fullname}}</p>
+            @if (siteLabelTemplate) {
+                <ng-container [ngTemplateOutlet]="siteLabelTemplate"
+                    [ngTemplateOutletContext]="{site: site, isCurrentSite: isCurrentSite}" />
+            }
+        </ion-label>
+
+        @if (siteItemTemplate) {
+            <ng-container [ngTemplateOutlet]="siteItemTemplate" [ngTemplateOutletContext]="{site: site, isCurrentSite: isCurrentSite}" />
+        }
+    </ion-item>
+</ng-template>

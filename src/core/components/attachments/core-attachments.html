@@ -1,0 +1,64 @@
+<core-loading [hideUntil]="loaded" [fullscreen]="false">
+    <ion-card>
+        <ion-item class="ion-text-wrap">
+            <ion-label>
+                <p class="item-heading">{{ title }} <span [core-mark-required]="required" class="core-mark-required"></span></p>
+                <span>
+                    @if (maxSubmissionsReadable) {
+                        {{ 'core.maxsizeandattachments' | translate:{$a: {size: maxSizeReadable, attachments: maxSubmissionsReadable} } }}
+                    } @else {
+                        {{ 'core.maxfilesize' | translate:{$a: maxSizeReadable} }}
+                    }
+                </span>
+            </ion-label>
+            @if (unlimitedFiles || (maxSubmissions !== undefined && maxSubmissions >= 0 && files && files.length < maxSubmissions)) {
+                <ion-button slot="end" (click)="add()" [ariaLabel]="'core.fileuploader.addfiletext' | translate">
+                    <ion-icon name="fas-plus" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+            }
+        </ion-item>
+
+        @if (fileTypes && fileTypes.mimetypes && fileTypes.mimetypes.length) {
+            <ion-accordion-group>
+                <ion-accordion toggleIconSlot="start">
+                    <ion-item class="core-attachments-header ion-text-wrap" slot="header">
+                        <ion-label>
+                            <p class="item-heading">{{ 'core.fileuploader.filesofthesetypes' | translate }}</p>
+                        </ion-label>
+                        <ion-icon name="ucg-information-diamond" aria-hidden="true" slot="end" color="dark" />
+                    </ion-item>
+
+                    <ul class="core-attachments" slot="content">
+                        @for (typeInfo of fileTypes.info; track typeInfo.name) {
+                            <li>
+                                @if (typeInfo.name) {
+                                    <strong>{{typeInfo.name}} </strong>
+                                }
+                                {{typeInfo.extlist}}
+                            </li>
+                        }
+                    </ul>
+                </ion-accordion>
+            </ion-accordion-group>
+        }
+
+        <ng-container *ngFor="let file of files; let index=index">
+            @if (file.name) {
+                <!-- Files added to draft but not attached to submission yet. -->
+                <core-local-file [file]="file" [manage]="true" (onDelete)="delete(index, false)" (onRename)="renamed(index, $event)" />
+            } @else {
+                <!-- Files already attached to the submission, either in online or in offline. -->
+                <core-file [file]="file" [component]="component" [componentId]="componentId" [canDelete]="true"
+                    (onDelete)="delete(index, true)" [canDownload]="!file.offline" />
+            }
+        </ng-container>
+
+        @if (!files || !files.length) {
+            <ion-item class="ion-text-wrap">
+                <ion-label>
+                    <p>{{ 'core.fileuploader.nofilesattached' | translate }}</p>
+                </ion-label>
+            </ion-item>
+        }
+    </ion-card>
+</core-loading>

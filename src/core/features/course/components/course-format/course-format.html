@@ -1,0 +1,77 @@
+<core-navbar-buttons slot="end" prepend>
+    <ion-button fill="clear" (click)="gotoCourseDownloads()" [ariaLabel]="'addon.storagemanager.coursedownloads' | translate">
+        <ion-icon name="ucg-cloud-download" slot="icon-only" aria-hidden="true" />
+    </ion-button>
+</core-navbar-buttons>
+<core-dynamic-component [component]="courseFormatComponent" [data]="data">
+    <!-- Default course format. -->
+    <core-loading [hideUntil]="loaded" placeholderType="listwithicon" placeholderHeight="128px" placeholderWidth="44px">
+
+        @if (selectedSection && selectedSection.id !== allSectionsId) {
+            <!-- Single section. -->
+            <div class="list-item-limited-width">
+                <core-dynamic-component [component]="singleSectionComponent" [data]="data">
+                    <ion-accordion-group [multiple]="true" (ionChange)="accordionMultipleChange($event.detail)"
+                        [value]="accordionMultipleValue">
+                        @if (!selectedSection.hiddenbynumsections && selectedSection.id !== stealthModulesSectionId) {
+                            <core-course-section [course]="course" [section]="selectedSection" [lastModuleViewed]="lastModuleViewed"
+                                [viewedModules]="viewedModules" [collapsible]="false" />
+                        }
+                    </ion-accordion-group>
+                    @if (!selectedSection.hasContent) {
+                        <core-empty-box icon="fas-table-cells-large" [message]="'core.course.nocontentavailable' | translate" />
+                    }
+                </core-dynamic-component>
+            </div>
+        }
+
+        @if (selectedSection && selectedSection.id === allSectionsId) {
+            <!-- Multiple sections. -->
+            <div class="list-item-limited-width">
+                <core-dynamic-component [component]="allSectionsComponent" [data]="data">
+                    <ion-accordion-group [multiple]="true" (ionChange)="accordionMultipleChange($event.detail)"
+                        [value]="accordionMultipleValue">
+                        @for (section of sections; track section.id) {
+                            @if ($index <= lastShownSectionIndex && !section.hiddenbynumsections && section.id !==allSectionsId &&
+                                section.id !==stealthModulesSectionId) {
+                                    <core-course-section [course]="course" [section]="section" [lastModuleViewed]="lastModuleViewed"
+                                        [viewedModules]="viewedModules" [collapsible]="true" />
+                            }
+                        }
+                    </ion-accordion-group>
+                </core-dynamic-component>
+
+                <core-infinite-loading [enabled]="canLoadMore" (action)="showMoreActivities($event)" />
+            </div>
+        }
+
+        @if (displayCourseIndex && selectedSection && selectedSection.id !== allSectionsId && sections.length > 1) {
+            <div collapsible-footer appearOnBottom slot="fixed">
+                <core-course-section-nav-buttons [currentSectionId]="selectedSection?.id" [allSections]="sections"
+                    [courseId]="course.id" (sectionChange)="sectionChanged($event)" />
+            </div>
+        }
+    </core-loading>
+</core-dynamic-component>
+
+
+@if (loaded && course && displayBlocks && hasBlocks) {
+    <core-block-side-blocks-button slot="fixed" contextLevel="course" [instanceId]="course.id" />
+}
+
+<!-- Course Index button. -->
+@if (loaded && (displayCourseIndex || communicationRoomUrl)) {
+    <ion-fab slot="fixed" core-fab vertical="bottom" horizontal="end">
+        @if (communicationRoomUrl) {
+            <ion-fab-button size="small" [href]="communicationRoomUrl" core-link [capture]="false"
+                [attr.aria-label]="'core.course.communicationroomlink' | translate">
+                <ion-icon name="far-comments" aria-hidden="true" />
+            </ion-fab-button>
+        }
+        @if (displayCourseIndex) {
+            <ion-fab-button (click)="openCourseIndex()" [attr.aria-label]="'core.course.courseindex' | translate" color="secondary">
+                <ion-icon name="fas-list-ul" aria-hidden="true" />
+            </ion-fab-button>
+        }
+    </ion-fab>
+}

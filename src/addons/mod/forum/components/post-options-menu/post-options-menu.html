@@ -1,0 +1,68 @@
+<ion-content>
+    <core-loading [hideUntil]="loaded()" [fullscreen]="false">
+        <ion-list>
+            @if (canMarkAsRead()) {
+                <ion-item button class="ion-text-wrap" (click)="toggleReadState()" [detail]="false" [disabled]="markAsReadDisabled()">
+                    <ion-icon [name]="postCalculated().unread ? 'fas-envelope-open' : 'fas-envelope'" slot="start" aria-hidden="true" />
+                    <ion-label>
+                        <p class="item-heading">
+                            @if (postCalculated().unread) {
+                                {{ 'addon.mod_forum.markread' | translate }}
+                            } @else {
+                                {{ 'addon.mod_forum.markunread' | translate }}
+                            }
+                        </p>
+                    </ion-label>
+                </ion-item>
+            }
+            @if (canEdit()) {
+                <ion-item button class="ion-text-wrap" (click)="editPost()" [detail]="false" [disabled]="editDeleteDisabled()">
+                    <ion-icon name="fas-pen" slot="start" aria-hidden="true" />
+                    <ion-label>
+                        <p class="item-heading">{{ 'addon.mod_forum.edit' | translate }}</p>
+                    </ion-label>
+                </ion-item>
+            }
+            @if (canDelete()) {
+                <ion-item button class="ion-text-wrap" (click)="deletePost()" [detail]="false" [disabled]="editDeleteDisabled()">
+                    <ion-icon name="fas-trash" slot="start" aria-hidden="true" />
+                    <ion-label>
+                        <p class="item-heading">
+                            @if (!isOfflinePost()) {
+                                {{ 'addon.mod_forum.delete' | translate }}
+                            } @else {
+                                {{ 'core.discard' | translate }}
+                            }
+                        </p>
+                    </ion-label>
+                </ion-item>
+            }
+
+            @if (!isOnline()) {
+                @if (unknownCapabilities()) {
+                    <ion-item lines="none" class="ion-text-wrap">
+                        <ion-icon name="fas-lock" slot="start" aria-hidden="true" />
+                        <ion-label>
+                            <p class="item-heading">{{ 'core.youreoffline' | translate }}</p>
+                            <p>{{ 'addon.mod_forum.reconnecttomanage' | translate }}</p>
+                        </ion-label>
+                    </ion-item>
+                } @else if (!isOfflinePost()) {
+                    <ion-item lines="none" class="ion-text-wrap item-lines-top">
+                        <ion-label>
+                            <p>{{ 'addon.mod_forum.offlinereconnectactions' | translate }}</p>
+                        </ion-label>
+                    </ion-item>
+                }
+            } @else if (!canMarkAsRead() && !canEdit() && !canDelete()) {
+                 <ion-item lines="none" class="ion-text-wrap">
+                        <ion-icon name="fas-lock" slot="start" aria-hidden="true" />
+                        <ion-label>
+                            <p class="item-heading">{{ 'addon.mod_forum.noactionsavailable' | translate }}</p>
+                            <p>{{ 'addon.mod_forum.nopermissiontoact' | translate }}</p>
+                        </ion-label>
+                    </ion-item>
+            }
+        </ion-list>
+    </core-loading>
+</ion-content>

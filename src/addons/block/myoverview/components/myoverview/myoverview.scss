@@ -1,0 +1,55 @@
+@use "src/theme/globals" as *;
+
+:host {
+    ion-row.addon-block-myoverview-filter {
+        margin: 8px;
+        padding: 0;
+
+        ion-col {
+            padding: 0;
+            margin-right: 2px;
+            margin-left: 2px;
+        }
+
+        ion-button,
+        core-combobox ::ng-deep ion-select {
+            --a11y-sizing-minTargetSize: 40px;
+            margin: 0;
+        }
+
+        ion-button {
+            --border-width: 0;
+
+            ion-icon {
+                font-size: var(--mdl-typography-icon-fontSize-md);
+            }
+        }
+
+        ion-searchbar {
+            padding: 0;
+            --height: 40px;
+        }
+    }
+
+    core-empty-box {
+        .item-heading {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+
+        .subdued {
+            color: var(--subdued-text-color);
+        }
+    }
+
+    ion-item-divider .core-button-spinner {
+        display: flex;
+        align-items: center;
+        @include margin-horizontal(10px);
+
+        ion-badge.core-course-download-courses-progress {
+            @include margin(null, 12px, null, null);
+        }
+    }
+}

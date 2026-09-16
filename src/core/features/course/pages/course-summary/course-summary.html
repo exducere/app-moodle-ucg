@@ -1,0 +1,186 @@
+<ion-header class="no-title">
+    <ion-toolbar>
+        @if (!isModal) {
+            <ion-buttons slot="start">
+                <ion-back-button [text]="'core.back' | translate" />
+            </ion-buttons>
+        }
+        <ion-title />
+        @if (isModal) {
+            <ion-buttons slot="end">
+                <ion-button fill="clear" (click)="closeModal()" [ariaLabel]="'core.close' | translate">
+                    <ion-icon slot="icon-only" name="fas-xmark" aria-hidden="true" />
+                </ion-button>
+            </ion-buttons>
+        }
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!dataLoaded" (ionRefresh)="refreshData($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="dataLoaded">
+        @if (course) {
+            <core-course-image [course]="course" class="page-top" />
+
+            <div class="course-container">
+                <div class="list-item-limited-width">
+                    <ion-item class="ion-text-wrap course-name">
+                        <ion-label>
+                            @if (course.displayname && course.shortname && course.fullname !== course.displayname) {
+                                <p class="core-course-shortname">
+                                    <core-format-text [text]="course.shortname" contextLevel="course" [contextInstanceId]="course.id" />
+                                </p>
+                            }
+                            <h1>
+                                <span class="sr-only">{{ 'core.courses.aria:coursename' | translate }}</span>
+                                <core-format-text [text]="course.fullname" contextLevel="course" [contextInstanceId]="course.id" />
+                            </h1>
+                            @if (course.categoryname) {
+                                <ion-chip color="primary" class="core-course-category ion-text-nowrap">
+                                    <span class="sr-only">{{ 'core.courses.aria:coursecategory' | translate }}</span>
+                                    <ion-label>
+                                        <core-format-text [text]="course.categoryname" contextLevel="coursecat"
+                                            [contextInstanceId]="course.categoryid" />
+                                    </ion-label>
+                                </ion-chip>
+                            }
+                        </ion-label>
+                        @if (displayOpenInBrowser) {
+                            <ion-button fill="clear" [href]="courseUrl" core-link [showBrowserWarning]="false"
+                                [ariaLabel]="'core.openinbrowser' | translate" slot="end" [class.hidden]="!isTeacher"
+                                class="core-course-oib-button">
+                                <ion-icon name="fas-up-right-from-square" slot="icon-only" aria-hidden="true" />
+                            </ion-button>
+                        }
+                    </ion-item>
+                    @if (progress !== undefined || course.startdate || course.enddate) {
+                        <ion-item class="ion-text-wrap">
+                            <ion-label>
+                                @if (progress !== undefined) {
+                                    <div class="core-course-progress">
+                                        <core-progress-bar [progress]="progress" a11yText="core.course.aria:sectionprogress" />
+                                    </div>
+                                }
+                                @if (course.startdate || course.enddate) {
+                                    <div class="core-course-dates">
+                                        @if (course.startdate) {
+                                            <core-reminders-date component="course" [instanceId]="course.id" type="coursestart"
+                                                [label]="'core.course.startdate' | translate" [time]="course.startdate"
+                                                [title]="course.fullname" [url]="courseUrl" />
+                                        }
+                                        @if (course.enddate) {
+                                            <core-reminders-date component="course" [instanceId]="course.id" type="courseend"
+                                                [label]="'core.course.enddate' | translate" [time]="course.enddate"
+                                                [title]="course.fullname" [url]="courseUrl" />
+                                        }
+                                    </div>
+                                }
+                            </ion-label>
+                        </ion-item>
+                    }
+
+                    @if (course.summary) {
+                        <ion-item class="ion-text-wrap" [detail]="false">
+                            <ion-label>
+                                <h2 class="item-heading">
+                                    {{'core.course.coursesummary' | translate}}
+                                </h2>
+                                <core-format-text [text]="course.summary" collapsible-item contextLevel="course"
+                                    [contextInstanceId]="course.id" />
+                            </ion-label>
+                        </ion-item>
+                    }
+
+                    @if (course.contacts && course.contacts.length) {
+                        <ion-list>
+                            <ion-item [button]="course.contacts.length >= 5" class="ion-text-wrap" (click)="toggleContacts()"
+                                [attr.aria-label]="(contactsExpanded ? 'core.collapse' : 'core.expand') | translate" [detail]="false">
+                                @if (course.contacts.length >= 5) {
+                                    <ion-icon name="fas-chevron-right" flip-rtl slot="start" aria-hidden="true"
+                                        class="expandable-status-icon" [class.expandable-status-icon-expanded]="contactsExpanded" />
+                                }
+                                <ion-label>
+                                    <h2 class="item-heading">
+                                        {{ 'core.teachers' | translate }}
+                                    </h2>
+                                </ion-label>
+                            </ion-item>
+                            @if (contactsExpanded || course.contacts.length < 5) {
+                                @for (contact of course.contacts; track contact.id) {
+                                    <ion-item button class="ion-text-wrap" core-user-link
+                                        [userId]="contact.id" [courseId]="isEnrolled ? course.id : null" [detail]="true">
+                                        <core-user-avatar [user]="contact" slot="start"
+                                            [courseId]="isEnrolled ? course.id : null" [linkProfile]="false" />
+                                        <ion-label>
+                                            <p class="item-heading">{{contact.fullname}}</p>
+                                        </ion-label>
+                                    </ion-item>
+                                }
+                            }
+                            <core-spacer />
+                        </ion-list>
+                    }
+
+                    @if (course.customfields) {
+                        <ion-item class="ion-text-wrap">
+                            <ion-label>
+                                @for (field of course.customfields; track field.shortname) {
+                                    @if (field.value) {
+                                        <div class="core-customfield core-customfield_{{field.type}} core-customfield_{{field.shortname}}">
+                                            <span class="core-customfieldname">
+                                                <core-format-text [text]="field.name" contextLevel="course"
+                                                    [contextInstanceId]="course.id" />
+                                                <span class="core-customfieldseparator">: </span>
+                                            </span>
+                                            <span class="core-customfieldvalue">
+                                                <core-format-text [text]="field.value"
+                                                    [collapsible-item]="field.type === 'textarea'  ? '' : null" contextLevel="course"
+                                                    [contextInstanceId]="course.id" />
+                                            </span>
+                                        </div>
+                                    }
+                                }
+                            </ion-label>
+                        </ion-item>
+                    }
+                </div>
+            </div>
+        }
+    </core-loading>
+</ion-content>
+
+@if (course && dataLoaded) {
+    <ion-footer>
+        <div class="list-item-limited-width">
+            @if (canAccessCourse) {
+                @for (item of courseMenuHandlers; track item.name) {
+                    <ion-button (click)="openMenuItem(item)" [class]="['ion-text-wrap', item.data.class]"
+                        expand="block">
+                        @if (item.data.icon) {
+                            <ion-icon [name]="item.data.icon" slot="start" aria-hidden="true" />
+                        }
+                        <ion-label>{{item.data.title | translate }}</ion-label>
+                    </ion-button>
+                }
+            }
+            @if (!isEnrolled) {
+
+                @if (selfEnrolInstances.length || hasBrowserEnrolments) {
+                    <ion-button expand="block" (click)="enrolMe()" class="ion-text-wrap">
+                        {{ 'core.courses.enrolme' | translate }}
+                    </ion-button>
+                } @else {
+                    <core-alert-card type="info" [message]="'core.courses.notenrollable' | translate" />
+                }
+
+            }
+            @if (!isModal && canAccessCourse) {
+                <ion-button (click)="openCourse()" expand="block" fill="outline" class="ion-text-wrap">
+                    <ion-icon name="ucg-eye" slot="start" aria-hidden="true" />
+                    {{ 'core.course.viewcourse' | translate }}
+                </ion-button>
+            }
+        </div>
+    </ion-footer>
+}

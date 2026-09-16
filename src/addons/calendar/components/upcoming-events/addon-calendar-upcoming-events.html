@@ -1,0 +1,12 @@
+<core-loading [hideUntil]="loaded" placeholderType="column" placeholderHeight="70px" [placeholderLimit]="8">
+    @if (!filteredEvents || !filteredEvents.length) {
+        <core-empty-box icon="fas-calendar" [message]="'addon.calendar.noevents' | translate" />
+    } @else {
+        <ion-list class="list-item-limited-width">
+            @for (event of filteredEvents; track event.id) {
+                <addon-calendar-event-card [event]="event" (onEventClicked)="eventClicked(event)" />
+            }
+        </ion-list>
+    }
+
+</core-loading>

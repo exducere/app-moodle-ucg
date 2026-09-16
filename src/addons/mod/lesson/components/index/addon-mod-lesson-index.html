@@ -1,0 +1,357 @@
+<!-- Buttons to add to the header. -->
+<core-navbar-buttons slot="end">
+    @if (!courseContentsPage) {
+        <ion-button fill="clear" (click)="openModuleSummary()" aria-haspopup="true" [ariaLabel]="'core.info' | translate">
+            <ion-icon name="ucg-information-diamond" slot="icon-only" aria-hidden="true" />
+        </ion-button>
+    } @else {
+        <core-context-menu>
+            <core-context-menu-item [priority]="5000" [content]="'core.info' | translate" (action)="openModuleSummary()"
+                iconAction="ucg-information-diamond" />
+        </core-context-menu>
+    }
+</core-navbar-buttons>
+
+<!-- Content. -->
+<core-loading [hideUntil]="!showLoading">
+
+    <!-- Activity info. -->
+    <core-course-module-info [module]="module" [description]="description" [component]="component" [componentId]="componentId"
+        [courseId]="courseId" [hasDataToSync]="hasOffline" (completionChanged)="onCompletionChange()" />
+
+    <core-tabs [hideUntil]="!showLoading" [selectedIndex]="selectedTab">
+        <!-- Index/Preview tab. -->
+        <core-tab [title]="'addon.mod_lesson.preview' | translate" (ionSelect)="indexSelected()">
+            <ng-template>
+                <!-- Prevent access messages. Only show the first one. -->
+                @if (lesson && preventReasons.length) {
+                    <core-alert-card type="info">
+                        <div [innerHTML]="preventReasons[0].message"></div>
+                    </core-alert-card>
+                }
+
+                <!-- Input password for protected lessons. -->
+                @if (askPassword) {
+                    <ion-card>
+                        <form (ngSubmit)="submitPassword($event, passwordinput)" #passwordForm>
+                            <ion-item class="ion-text-wrap">
+                                <ion-input labelPlacement="stacked" name="password" type="password"
+                                    placeholder="{{ 'core.login.password' | translate }}" core-auto-focus #passwordinput
+                                    [clearOnEdit]="false" [label]="'addon.mod_lesson.enterpassword' | translate">
+                                    <ion-input-password-toggle slot="end" showIcon="fas-eye" hideIcon="fas-eye-slash" />
+                                </ion-input>
+                            </ion-item>
+                            <ion-button expand="block" type="submit">
+                                {{ 'addon.mod_lesson.continue' | translate }}
+                            </ion-button>
+                            <!-- Remove this once Ionic fixes this bug: https://github.com/ionic-team/ionic-framework/issues/19368 -->
+                            <input type="submit" class="core-submit-hidden-enter" />
+                        </form>
+                    </ion-card>
+                }
+
+                @if (canViewReports) {
+                    <core-loading [hideUntil]="!showSpinner" [fullscreen]="false" placeholderType="column"
+                        placeholderHeight="28px" [placeholderLimit]="1">
+                        @if ((lesson && !preventReasons.length) || retakeToReview) {
+                            <ion-list>
+                                <ng-container *ngTemplateOutlet="buttons" />
+                            </ion-list>
+                        }
+                    </core-loading>
+                }
+            </ng-template>
+        </core-tab>
+
+        <!-- Reports tab. -->
+        @if (canViewReports) {
+            <core-tab [title]="'addon.mod_lesson.reports' | translate" (ionSelect)="reportsSelected()">
+                <ng-template>
+                    <core-loading [hideUntil]="reportLoaded">
+                        <core-group-selector [groupInfo]="groupInfo" [(selected)]="group" (selectedChange)="setGroup(group)"
+                            [courseId]="courseId" />
+
+                        <!-- No lesson retakes. -->
+                        @if (lesson && !overview && selectedGroupEmptyMessage) {
+                            <core-empty-box icon="fas-chart-bar">
+                                <core-format-text [text]="selectedGroupEmptyMessage" contextLevel="course" [contextInstanceId]="courseId"
+                                    [wsNotFiltered]="true" />
+                            </core-empty-box>
+                        }
+                        @if (!overview && !selectedGroupEmptyMessage) {
+                            <core-empty-box icon="fas-chart-bar" [message]="'addon.mod_lesson.nolessonattempts' | translate" />
+                        }
+
+                        <!-- General statistics for the current group. -->
+                        @if (overview) {
+                            <ion-card class="addon-mod_lesson-lessonstats">
+                                <ion-card-header class="ion-text-wrap">
+                                    <ion-card-title>{{ 'addon.mod_lesson.lessonstats' | translate }}</ion-card-title>
+                                </ion-card-header>
+
+                                <!-- In tablet, max 2 rows with 3 columns. -->
+                                <ion-grid class="ion-text-wrap ion-hide-md-down">
+                                    @if (overview.lessonscored) {
+                                        <ion-row>
+                                            <ion-col class="ion-text-center">
+                                                <p class="item-heading">{{ 'addon.mod_lesson.averagescore' | translate }}</p>
+                                                @if (overview.numofattempts > 0) {
+                                                    <p>
+                                                        {{ 'core.percentagenumber' | translate:{$a: overview.avescore} }}
+                                                    </p>
+                                                } @else {
+                                                    <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                                }
+                                            </ion-col>
+
+                                            <ion-col class="ion-text-center">
+                                                <p class="item-heading">{{ 'addon.mod_lesson.highscore' | translate }}</p>
+                                                @if (overview.highscore !== null) {
+                                                    <p>
+                                                        {{ 'core.percentagenumber' | translate:{$a: overview.highscore} }}
+                                                    </p>
+                                                } @else {
+                                                    <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                                }
+                                            </ion-col>
+
+                                            <ion-col class="ion-text-center">
+                                                <p class="item-heading">{{ 'addon.mod_lesson.lowscore' | translate }}</p>
+                                                @if (overview.lowscore !== null) {
+                                                    <p>
+                                                        {{ 'core.percentagenumber' | translate:{$a: overview.lowscore} }}
+                                                    </p>
+                                                } @else {
+                                                    <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                                }
+                                            </ion-col>
+                                        </ion-row>
+                                    }
+                                    <ion-row>
+                                        <ion-col class="ion-text-center">
+                                            <p class="item-heading">{{ 'addon.mod_lesson.averagetime' | translate }}</p>
+                                            @if (overview.avetime !== null && overview.numofattempts) {
+                                                <p>{{ avetimeReadable }}</p>
+                                            } @else {
+                                                <p>
+                                                    {{ 'addon.mod_lesson.notcompleted' | translate }}
+                                                </p>
+                                            }
+                                        </ion-col>
+
+                                        <ion-col class="ion-text-center">
+                                            <p class="item-heading">{{ 'addon.mod_lesson.hightime' | translate }}</p>
+                                            @if (overview.hightime !== null) {
+                                                <p>{{ hightimeReadable }}</p>
+                                            } @else {
+                                                <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                            }
+                                        </ion-col>
+
+                                        <ion-col class="ion-text-center">
+                                            <p class="item-heading">{{ 'addon.mod_lesson.lowtime' | translate }}</p>
+                                            @if (overview.lowtime !== null) {
+                                                <p>{{ lowtimeReadable }}</p>
+                                            } @else {
+                                                <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                            }
+                                        </ion-col>
+                                    </ion-row>
+                                </ion-grid>
+
+                                <!-- In phone, 3 rows with 1 or 2 columns. -->
+                                <ion-grid class="ion-text-wrap ion-hide-md-up">
+                                    <ion-row>
+                                        @if (overview.lessonscored) {
+                                            <ion-col class="ion-text-center">
+                                                <p class="item-heading">{{ 'addon.mod_lesson.averagescore' | translate }}</p>
+                                                @if (overview.numofattempts > 0) {
+                                                    <p>
+                                                        {{ 'core.percentagenumber' | translate:{$a: overview.avescore} }}
+                                                    </p>
+                                                } @else {
+                                                    <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                                }
+                                            </ion-col>
+                                        }
+
+                                        <ion-col [class.ion-text-center]="overview.lessonscored">
+                                            <p class="item-heading">{{ 'addon.mod_lesson.averagetime' | translate }}</p>
+                                            @if (overview.avetime !== null && overview.numofattempts) {
+                                                <p>{{ avetimeReadable }}</p>
+                                            } @else {
+                                                <p>
+                                                    {{ 'addon.mod_lesson.notcompleted' | translate }}
+                                                </p>
+                                            }
+                                        </ion-col>
+                                    </ion-row>
+                                    <ion-row>
+                                        @if (overview.lessonscored) {
+                                            <ion-col class="ion-text-center">
+                                                <p class="item-heading">{{ 'addon.mod_lesson.highscore' | translate }}</p>
+                                                @if (overview.highscore !== null) {
+                                                    <p>
+                                                        {{ 'core.percentagenumber' | translate:{$a: overview.highscore} }}
+                                                    </p>
+                                                } @else {
+                                                    <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                                }
+                                            </ion-col>
+                                        }
+
+                                        <ion-col [class.ion-text-center]="overview.lessonscored">
+                                            <p class="item-heading">{{ 'addon.mod_lesson.hightime' | translate }}</p>
+                                            @if (overview.hightime !== null) {
+                                                <p>{{ hightimeReadable }}</p>
+                                            } @else {
+                                                <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                            }
+                                        </ion-col>
+                                    </ion-row>
+                                    <ion-row>
+                                        @if (overview.lessonscored) {
+                                            <ion-col class="ion-text-center">
+                                                <p class="item-heading">{{ 'addon.mod_lesson.lowscore' | translate }}</p>
+                                                @if (overview.lowscore !== null) {
+                                                    <p>
+                                                        {{ 'core.percentagenumber' | translate:{$a: overview.lowscore} }}
+                                                    </p>
+                                                } @else {
+                                                    <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                                }
+                                            </ion-col>
+                                        }
+
+                                        <ion-col [class.ion-text-center]="overview.lessonscored">
+                                            <p class="item-heading">{{ 'addon.mod_lesson.lowtime' | translate }}</p>
+                                            @if (overview.lowtime !== null) {
+                                                <p>{{ lowtimeReadable }}</p>
+                                            } @else {
+                                                <p>{{ 'addon.mod_lesson.notcompleted' | translate }}</p>
+                                            }
+                                        </ion-col>
+                                    </ion-row>
+                                </ion-grid>
+                            </ion-card>
+                        }
+
+                        <!-- List of students that have retakes. -->
+                        @if (overview) {
+                            <ion-card>
+                                <ion-card-header class="ion-text-wrap">
+                                    <ion-card-title>{{ 'addon.mod_lesson.overview' | translate }}</ion-card-title>
+                                </ion-card-header>
+
+                                @for (student of overview.students; track student.id) {
+                                    <ion-item class="ion-text-wrap" button (click)="openRetake(student.id)" [detail]="true">
+                                        <core-user-avatar [user]="student" slot="start" [courseId]="courseId" />
+                                        <ion-label>
+                                            <p class="item-heading">{{ student.fullname }}</p>
+                                            <core-progress-bar [progress]="student.bestgrade" a11yText="core.gradenoun" />
+                                        </ion-label>
+                                    </ion-item>
+                                }
+                            </ion-card>
+                        }
+                    </core-loading>
+                </ng-template>
+            </core-tab>
+        }
+    </core-tabs>
+
+    @if (!showLoading) {
+        <div collapsible-footer slot="fixed">
+            @if (!canViewReports && ((lesson && !preventReasons.length) || retakeToReview)) {
+                <div class="list-item-limited-width">
+                    <core-loading [hideUntil]="!showSpinner" [fullscreen]="false" placeholderType="column"
+                        placeholderHeight="28px" [placeholderLimit]="1">
+                        <ng-container *ngTemplateOutlet="buttons" />
+                    </core-loading>
+                </div>
+            }
+
+            <core-course-module-navigation [courseId]="courseId" [currentModuleId]="module.id" />
+        </div>
+    }
+</core-loading>
+
+
+<ng-template #buttons>
+    @if (retakeToReview) {
+
+        <!-- A retake was finished in a synchronization, allow reviewing it. -->
+        <ion-item class="ion-text-wrap">
+            <ion-label class="ion-padding-bottom">
+                {{ 'addon.mod_lesson.retakefinishedinsync' | translate }}
+            </ion-label>
+        </ion-item>
+        <ion-button class="ion-text-wrap ion-margin" expand="block" (click)="review()">
+            {{ 'addon.mod_lesson.review' | translate }}
+        </ion-button>
+
+    }
+
+    @if (lesson && !preventReasons.length) {
+
+        @if (leftDuringTimed) {
+            @if (!finishedOffline) {
+                @if (!lesson.timelimit) {
+                    <ion-item class="ion-text-wrap">
+                        <!-- User left during the session and there is no time limit, ask to continue. -->
+                        <ion-label>
+                            <p [innerHTML]="'addon.mod_lesson.youhaveseen' | translate"></p>
+                            <ion-row>
+                                <ion-col>
+                                    <ion-button expand="block" fill="outline" (click)="start(false)">
+                                        {{ 'core.no' | translate }}
+                                    </ion-button>
+                                </ion-col>
+                                <ion-col>
+                                    <ion-button expand="block" (click)="start(true)">
+                                        {{ 'core.yes' | translate }}
+                                    </ion-button>
+                                </ion-col>
+                            </ion-row>
+                        </ion-label>
+                    </ion-item>
+                } @else if (lesson.retake) {
+                    <ion-item class="ion-text-wrap">
+                        <!-- User left during the session with time limit and retakes allowed, ask to continue. -->
+                        <ion-label [innerHTML]="'addon.mod_lesson.leftduringtimed' | translate" />
+                    </ion-item>
+                    <ion-button class="ion-text-wrap ion-margin" expand="block" (click)="start(false)">
+                        {{ 'addon.mod_lesson.continue' | translate }}
+                    </ion-button>
+                }
+            }
+
+            @if (lesson.timelimit && !lesson.retake) {
+                <ion-item class="ion-text-wrap">
+                    <!-- User left during the session with time limit and retakes not allowed.
+                This should be handled by preventMessages. -->
+                    <ion-label [innerHTML]="'addon.mod_lesson.leftduringtimednoretake' | translate" />
+                </ion-item>
+            }
+        } @else if (!finishedOffline) {
+            <!-- User hasn't left during the session, show a start button. -->
+            @if (!canManage) {
+                <ion-button class="ion-text-wrap ion-margin" expand="block" (click)="start(false)">
+                    {{ 'core.start' | translate }}
+                </ion-button>
+            } @else {
+                <ion-button class="ion-text-wrap ion-margin" expand="block" fill="outline" (click)="start(false)">
+                    <ion-icon name="fas-magnifying-glass" slot="start" aria-hidden="true" />
+                    {{ 'addon.mod_lesson.preview' | translate }}
+                </ion-button>
+            }
+
+        } @else {
+            <ion-button class="ion-text-wrap ion-margin" expand="block" (click)="start(true)">
+                <!-- There's an attempt finished in offline. Let the user continue, showing the end of lesson. -->
+                {{ 'addon.mod_lesson.continue' | translate }}
+            </ion-button>
+        }
+
+    }
+</ng-template>

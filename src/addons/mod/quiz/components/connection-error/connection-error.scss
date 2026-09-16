@@ -1,0 +1,15 @@
+:host {
+    background-color: var(--danger-tint);
+
+    .item {
+        --background: var(--danger-tint);
+    }
+}
+
+:host-context(.dark) {
+    background-color: var(--danger-shade);
+
+    .item {
+        --background: var(--danger-shade);
+    }
+}

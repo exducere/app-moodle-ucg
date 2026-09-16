@@ -1,0 +1,140 @@
+<!-- Buttons to add to the header. -->
+<core-navbar-buttons slot="end">
+    @if (canSearch) {
+        <ion-button fill="clear" (click)="showSearch()" [ariaLabel]="'addon.mod_data.search' | translate">
+            <ion-icon name="fas-magnifying-glass" slot="icon-only" aria-hidden="true" />
+        </ion-button>
+    }
+    <core-context-menu>
+        @if (canAdd) {
+            <core-context-menu-item [priority]="500" [content]="'addon.mod_data.add' | translate" iconAction="fas-plus"
+                (action)="gotoAddEntry()" />
+        }
+        @if (firstEntry) {
+            <core-context-menu-item [priority]="400" [content]="'addon.mod_data.single' | translate" iconAction="fas-file"
+                (action)="gotoEntry(firstEntry)" />
+        }
+
+        @if (courseContentsPage) {
+            <core-context-menu-item [priority]="5000" [content]="'core.info' | translate" (action)="openModuleSummary()"
+                iconAction="ucg-information-diamond" />
+        }
+    </core-context-menu>
+
+    @if (!courseContentsPage) {
+        <ion-button fill="clear" (click)="openModuleSummary()" aria-haspopup="true" [ariaLabel]="'core.info' | translate">
+            <ion-icon name="ucg-information-diamond" slot="icon-only" aria-hidden="true" />
+        </ion-button>
+    }
+</core-navbar-buttons>
+
+<!-- Content. -->
+<core-loading [hideUntil]="!showLoading">
+
+    <!-- Activity info. -->
+    <core-course-module-info [module]="module" [description]="description" [component]="component" [componentId]="componentId"
+        [courseId]="courseId" [hasDataToSync]="hasOffline || hasOfflineRatings" (completionChanged)="onCompletionChange()" />
+
+    <core-group-selector [groupInfo]="groupInfo" [(selected)]="selectedGroup" (selectedChange)="setGroup(selectedGroup)"
+        [courseId]="database?.course" />
+
+    @if (access) {
+        @if (!access.timeavailable) {
+            @if (timeAvailableFrom) {
+                <core-alert-card type="info"
+                    [message]="'addon.mod_data.notopenyet' | translate:{$a: timeAvailableFromReadable}" />
+            }
+
+            @if (timeAvailableTo) {
+                <core-alert-card type="info"
+                    [message]="'addon.mod_data.expired' | translate:{$a: timeAvailableToReadable}" />
+            }
+        }
+
+        @if (access.entrieslefttoview) {
+            <core-alert-card type="info"
+                [message]="'addon.mod_data.entrieslefttoaddtoview' | translate:
+                    {$a: {entrieslefttoview: access.entrieslefttoview} }" />
+        }
+
+        @if (access.entrieslefttoadd) {
+            <core-alert-card type="info"
+                [message]="'addon.mod_data.entrieslefttoadd' | translate:
+                    {$a: {entriesleft: access.entrieslefttoadd} }" />
+        }
+    }
+
+    @if (!isEmpty) {
+        @if (search.searching) {
+            <!-- Reset search. -->
+            @if (!foundRecordsTranslationData) {
+                <ion-item (click)="searchReset($event)" button [detail]="false">
+                    <ion-label color="info">
+                        {{ 'addon.mod_data.resetsettings' | translate}}
+                    </ion-label>
+                </ion-item>
+            } @else {
+                <core-alert-card type="success">
+                    <p (ariaButtonClick)="searchReset($event)" [innerHTML]="'addon.mod_data.foundrecords' |
+                        translate:{$a: foundRecordsTranslationData}" style="min-height: auto;">
+                    </p>
+                </core-alert-card>
+            }
+
+        }
+
+        @if (database) {
+            <div class="addon-data-contents addon-data-entries addon-data-entries-{{database.id}}">
+                <core-compile-html [text]="entriesRendered" [jsData]="jsData" [extraImports]="extraImports"
+                    [cssCode]="database.csstemplate" />
+            </div>
+        }
+    } @else {
+        @if (!search.searching) {
+            <core-empty-box icon="fas-database" [message]="'addon.mod_data.norecords' | translate" />
+        } @else {
+            <core-empty-box icon="fas-database" [message]="'addon.mod_data.nomatch' | translate" class="core-empty-box-clickable">
+                <button class="as-link" (click)="searchReset($event)">{{ 'addon.mod_data.resetsettings' | translate}}</button>
+            </core-empty-box>
+        }
+    }
+
+    @if (!showLoading) {
+        <div collapsible-footer appearOnBottom slot="fixed">
+            @if (search.page > 0 || hasNextPage) {
+                <ion-grid>
+                    <ion-row class="ion-align-items-center">
+                        @if (search.page > 0) {
+                            <ion-col>
+                                <ion-button expand="block" fill="outline" (click)="searchEntries(search.page - 1)">
+                                    <ion-icon name="fas-chevron-left" slot="start" aria-hidden="true" />
+                                    {{ 'core.previous' | translate }}
+                                </ion-button>
+                            </ion-col>
+                        }
+                        @if (hasNextPage) {
+                            <ion-col>
+                                <ion-button expand="block" (click)="searchEntries(search.page + 1)">
+                                    {{ 'core.next' | translate }}
+                                    <ion-icon name="fas-chevron-right" slot="end" aria-hidden="true" />
+                                </ion-button>
+                            </ion-col>
+                        }
+                    </ion-row>
+                </ion-grid>
+            }
+
+            <core-course-module-navigation [courseId]="courseId" [currentModuleId]="module.id" />
+        </div>
+    }
+</core-loading>
+
+
+@if (canAdd) {
+    <ion-fab slot="fixed" core-fab vertical="bottom" horizontal="end">
+        <ion-fab-button (click)="gotoAddEntry()" [attr.aria-label]="'addon.mod_data.add' | translate">
+            <ion-icon name="fas-plus" aria-hidden="true" />
+            <span class="sr-only">{{ 'addon.mod_data.add' | translate }}</span>
+        </ion-fab-button>
+    </ion-fab>
+}

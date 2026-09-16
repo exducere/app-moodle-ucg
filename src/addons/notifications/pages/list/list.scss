@@ -1,0 +1,66 @@
+@use "src/theme/globals" as *;
+
+ion-item.addon-notification-item {
+
+    ion-label {
+        margin-top: 8px;
+        margin-bottom: 8px;
+        p {
+            font: var(--mdl-typography-body-font-sm);
+            &.item-heading {
+                font-size: var(--text-size);
+                @include ellipsis(3);
+            }
+            &.addon-notification-unread {
+                font-weight: bold;
+            }
+        }
+    }
+
+    ion-note {
+        margin: 0;
+        @include padding-horizontal(8px, 0);
+        padding-top: 12px;
+
+        ion-icon {
+            font-size: #{dynamic-font(6px)};
+            vertical-align: middle;
+        }
+    }
+
+    [slot=start] {
+        align-self: start;
+        margin-top: 16px;
+    }
+}
+
+.mark-all-as-read {
+    padding-bottom: 16px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: transparent;
+    box-shadow: none;
+    pointer-events: none;
+
+    ion-chip.ion-color {
+        margin: 0 auto;
+
+        ion-spinner {
+            width: 16px;
+            height: 16px;
+            @include margin-horizontal(0, 8px);
+        }
+    }
+
+    ion-chip:focus-visible {
+        outline: 2px solid var(--light);
+        outline-offset: -4px;
+    }
+}
+
+
+ion-content::part(scroll) {
+    padding-bottom: 44px;
+}

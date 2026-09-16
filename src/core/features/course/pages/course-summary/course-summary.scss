@@ -1,0 +1,81 @@
+@use "src/theme/globals" as *;
+
+:host {
+    --thumb-height: 180px;
+
+    ion-content {
+        position: absolute;
+    }
+
+    core-course-image {
+        --core-image-size: var(--thumb-height);
+    }
+
+    .course-container {
+        position: relative;
+        top: calc(var(--thumb-height) - var(--mdl-shape-borderRadius-lg));
+        border-radius: var(--mdl-shape-borderRadius-lg) var(--mdl-shape-borderRadius-lg) 0 0;
+        background-color: var(--ion-background-color);
+        box-shadow: var(--drop-shadow-top);
+        clip-path: inset(-5px 0px 0px 0px);
+    }
+
+    .course-name {
+        --background: transparent;
+        ion-label {
+            margin-bottom: 0px;
+        }
+    }
+
+    h1 {
+        font-size: var(--mdl-typography-heading4-fontSize);
+    }
+
+    .core-course-category {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .core-course-dates {
+        background: var(--light);
+        border-radius: var(--mdl-shape-borderRadius-xs);
+        padding: 8px;
+        width: 100%;
+
+        p {
+            margin-bottom: 8px;
+        }
+
+        p:last-child {
+            margin-bottom: 0px;
+        }
+
+        ion-icon {
+            @include margin-horizontal(null, 8px);
+        }
+    }
+
+
+    .core-customfield {
+        margin-bottom: 8px;
+
+        &.core-customfield_textarea {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+
+        .core-customfieldname {
+            @include margin-horizontal(null, 4px);
+            font-weight: bold;
+            display: inline;
+        }
+        .core-customfieldvalue {
+            display: inline;
+        }
+    }
+
+    .core-course-oib-button.hidden {
+        display: none;
+    }
+}

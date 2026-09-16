@@ -1,0 +1,127 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>
+                <core-format-text [text]="title" contextLevel="module" [contextInstanceId]="cmId" [courseId]="courseId" />
+            </h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            @if (loaded) {
+                <ion-button fill="clear" (click)="showChatUsers()" [ariaLabel]="'core.users' | translate">
+                    <ion-icon name="fas-users" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+            }
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <core-loading [hideUntil]="loaded">
+        <ion-list class="addon-messages-discussion-container" aria-live="polite">
+            <ng-container *ngFor="let message of messages; index as index; last as last">
+
+                @if (message.showDate) {
+                    <p class="ion-text-center addon-messages-date">
+                        {{ message.timestamp * 1000 | coreFormatDate: "strftimedayshort" }}
+                    </p>
+                }
+
+                @if (message.special) {
+                    <div class="ion-text-center addon-mod_chat-notice">
+                        @if (message.system && message.message === 'enter') {
+                            <ion-badge class="ion-text-wrap" color="success">
+                                <span>
+                                    <ion-icon name="fas-right-to-bracket" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messageenter' | translate:{$a: message.userfullname} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (message.system && message.message === 'exit') {
+                            <ion-badge class="ion-text-wrap" color="danger">
+                                <span>
+                                    <ion-icon name="fas-right-from-bracket" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messageexit' | translate:{$a: message.userfullname} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (message.beep === 'all') {
+                            <ion-badge class="ion-text-wrap" color="primary">
+                                <span>
+                                    <ion-icon name="ucg-notification-03" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messagebeepseveryone' | translate:{$a: message.userfullname} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (message.userid !== currentUserId && message.beep === currentUserId) {
+                            <ion-badge class="ion-text-wrap" color="primary">
+                                <span>
+                                    <ion-icon name="ucg-notification-03" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messagebeepsyou' | translate:{$a: message.userfullname} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (message.userid === currentUserId && message.beep && message.beep !== 'all') {
+                            <ion-badge class="ion-text-wrap" color="light">
+                                <span>
+                                    <ion-icon name="ucg-notification-03" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    {{ 'addon.mod_chat.messageyoubeep' | translate:{$a: message.beepWho} }}
+                                </span>
+                            </ion-badge>
+                        }
+
+                        @if (!message.system && !message.beep) {
+                            <ion-badge class="ion-text-wrap" color="info">
+                                <span>
+                                    <ion-icon name="fas-asterisk" aria-hidden="true" />
+                                    {{ message.timestamp * 1000 | coreFormatDate:"strftimetime" }}
+                                    <strong>
+                                        {{ message.userfullname }} <core-format-text [text]="message.message" contextLevel="module"
+                                            [contextInstanceId]="cmId" [courseId]="courseId" (afterRender)="last && scrollToBottom()" />
+                                    </strong>
+                                </span>
+                            </ion-badge>
+                        }
+                    </div>
+                }
+
+                @if (!message.special) {
+                    <core-message [message]="message" [user]="message" [text]="message.message" [time]="message.timestamp * 1000"
+                        (afterRender)="last && scrollToBottom()" contextLevel="module" [instanceId]="cmId" [courseId]="courseId" />
+                }
+            </ng-container>
+        </ion-list>
+
+        @if (!messages || messages.length <= 0) {
+            <core-empty-box icon="far-comments" [message]="'addon.mod_chat.nomessages' | translate" />
+        }
+    </core-loading>
+</ion-content>
+<ion-footer class="footer-adjustable">
+    <ion-toolbar [color]="isOnline() && polling && loaded ? null : 'light'">
+        @if (!isOnline()) {
+            <p class="ion-text-center">
+                {{ 'addon.mod_chat.mustbeonlinetosendmessages' | translate }}
+            </p>
+        } @else if(loaded) {
+            @if (polling) {
+                <core-send-message-form [sendDisabled]="sending" [message]="newMessage" (onSubmit)="sendMessage($event)"
+                    [placeholder]="'addon.messages.newmessage' | translate" />
+            } @else {
+                <ion-button (click)="reconnect()" expand="block" fill="outline">
+                    {{ 'core.login.reconnect' | translate }}
+                </ion-button>
+            }
+        }
+    </ion-toolbar>
+</ion-footer>

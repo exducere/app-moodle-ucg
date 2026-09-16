@@ -1,0 +1,63 @@
+@use "src/theme/globals" as *;
+
+h3 {
+    font: var(--mdl-typography-heading5-font);
+}
+
+h4 {
+    font: var(--mdl-typography-heading6-font);
+}
+
+.addon-block-timeline-activity {
+    ion-badge {
+        @include margin-horizontal(0.25rem, 0.5rem);
+    }
+
+    small {
+        @include margin-horizontal(null, 0.5rem);
+    }
+
+    core-mod-icon {
+        --module-legacy-icon-padding: 8px;
+        --margin-end: 0.5rem;
+        --margin-vertical: 0px;
+    }
+
+    ion-label {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+
+        .addon-block-timeline-activity-action {
+            align-self: flex-end;
+            display: flex;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+    }
+
+    ion-ripple-effect {
+        z-index: 1;
+    }
+}
+
+.addon-block-timeline-activity-time {
+    flex-grow: 0;
+}
+
+.addon-block-timeline-activity-name {
+    flex-grow: 1;
+    overflow: hidden;
+
+    & > p {
+        display: flex;
+        flex-wrap: wrap;
+
+        & > span {
+            @include ellipsis();
+        }
+
+    }
+
+}

@@ -1,0 +1,51 @@
+<!-- Question contents. -->
+@if (showQuestion) {
+    <core-dynamic-component [component]="componentClass" [data]="data" class="core-question-{{question?.slot}}">
+        <!-- This content will only be shown if there's no component to render the question. -->
+        <p class="ion-padding">{{ 'core.question.errorquestionnotsupported' | translate:{$a: question?.type} }}</p>
+    </core-dynamic-component>
+}
+
+<!-- Sequence check input. -->
+@if (seqCheck) {
+    <input type="hidden" name="{{seqCheck.name}}" value="{{seqCheck.value}}">
+}
+
+<!-- Question behaviour components. -->
+<core-dynamic-component *ngFor="let componentClass of behaviourComponents" [component]="componentClass" [data]="data" />
+
+<!-- Question validation error. -->
+@if (validationError) {
+    <ion-item class="ion-text-wrap core-danger-item">
+        <ion-label>
+            <p>{{ validationError }}</p>
+        </ion-label>
+    </ion-item>
+}
+
+<!-- Question behaviour buttons. -->
+<ion-button *ngFor="let button of question?.behaviourButtons" class="ion-margin-vertical ion-text-wrap" expand="block"
+    (click)="buttonClicked.emit(button)" [disabled]="button.disabled">
+    <core-format-text [component]="component" [componentId]="componentId" [text]="button.value" [contextLevel]="contextLevel"
+        [contextInstanceId]="contextInstanceId" [courseId]="courseId" />
+</ion-button>
+
+<!-- Question feedback. -->
+@if (question && question.feedbackHtml) {
+    <ion-item class="ion-text-wrap core-question-feedback-container">
+        <ion-label>
+            <core-format-text [component]="component" [componentId]="componentId" [text]="question.feedbackHtml"
+                [contextLevel]="contextLevel" [contextInstanceId]="contextInstanceId" [courseId]="courseId" />
+        </ion-label>
+    </ion-item>
+}
+
+<!-- Question comment. -->
+@if (question && question.commentHtml) {
+    <ion-item class="ion-text-wrap core-question-comment">
+        <ion-label>
+            <core-format-text [component]="component" [componentId]="componentId" [text]="question.commentHtml"
+                [contextLevel]="contextLevel" [contextInstanceId]="contextInstanceId" [courseId]="courseId" />
+        </ion-label>
+    </ion-item>
+}

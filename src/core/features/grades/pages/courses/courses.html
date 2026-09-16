@@ -1,0 +1,45 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1 core-page-title>{{ 'core.grades.grades' | translate }}</h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <core-split-view>
+        <ion-refresher slot="fixed" [disabled]="!courses.loaded" (ionRefresh)="refreshCourses($event.target)">
+            <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+        </ion-refresher>
+        <core-loading [hideUntil]="courses.loaded" placeholderType="column" placeholderHeight="48px">
+            @if (courses.empty) {
+                <core-empty-box icon="fas-chart-bar" [message]="'core.grades.nogradesreturned' | translate" />
+            } @else {
+                <ion-list>
+                    @for (course of courses.items; track course.courseid) {
+                        <ion-item [attr.aria-label]="course.courseFullName" [attr.aria-current]="courses.getItemAriaCurrent(course)"
+                            [attr.data-course-id]="course.courseid" class="ion-text-wrap" button [detail]="true"
+                            (click)="courses.select(course)">
+                            <ion-label>
+                                <p class="item-heading">
+                                    <core-format-text [text]="course.courseFullName" [contextInstanceId]="course.courseid"
+                                        contextLevel="course" />
+                                </p>
+                            </ion-label>
+                            <ion-badge slot="end" color="light">
+                                @if (course.grade && course.grade !== '-') {
+                                    <span class="sr-only">
+                                        {{ 'core.gradenoun' | translate }}
+                                    </span>
+                                }
+                                {{course.grade}}
+                            </ion-badge>
+                        </ion-item>
+                    }
+                </ion-list>
+            }
+        </core-loading>
+    </core-split-view>
+</ion-content>

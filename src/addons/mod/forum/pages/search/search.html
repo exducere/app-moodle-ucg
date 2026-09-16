@@ -1,0 +1,46 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            @if (forum) {
+                <h1>{{ forum.name }}</h1>
+            } @else {
+                <h1>{{ 'addon.block_searchforums.pluginname' | translate }}</h1>
+            }
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content class="limited-width">
+    <div>
+        @if (searchBanner) {
+            <core-alert-card type="danger">
+                <core-format-text [text]="searchBanner" />
+            </core-alert-card>
+        }
+
+        <core-search-box (searchTextChange)="search($event)" [autoFocus]="true" [searchArea]="searchAreaId" />
+
+        @if (resultsSource.isLoaded()) {
+            <ion-list>
+                <core-search-global-search-result *ngFor="let result of resultsSource.getItems()" [result]="result" [showCourse]="false"
+                    (onClick)="visitResult(result)" />
+            </ion-list>
+        }
+
+        <core-infinite-loading [enabled]="resultsSource.isLoaded() && !resultsSource.isCompleted()" (action)="loadMoreResults($event)"
+            [error]="loadMoreError" />
+
+        @if (resultsSource.isEmpty()) {
+            <core-empty-box icon="fas-magnifying-glass" [dimmed]="!resultsSource.isLoaded()" role="alert">
+                @if (!resultsSource.isLoaded()) {
+                    <p>{{ 'core.search.empty' | translate }}</p>
+                } @else {
+                    <p><strong>{{ 'core.search.noresults' | translate: { $a: resultsSource.getQuery() } }}</strong></p>
+                    <p><small>{{ 'core.search.noresultshelp' | translate }}</small></p>
+                }
+            </core-empty-box>
+        }
+    </div>
+</ion-content>

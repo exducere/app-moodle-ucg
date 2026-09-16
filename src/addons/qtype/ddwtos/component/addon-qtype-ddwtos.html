@@ -1,0 +1,23 @@
+@if (question && (question.text || question.text === '')) {
+    <div>
+        <!-- Content is outside the core-loading to let the script calculate drag items position -->
+        <core-loading [hideUntil]="question.loaded" />
+
+        @if (!question.readOnly) {
+            <core-alert-card type="info" [message]="'core.question.howtodraganddrop' | translate" [hidden]="!question.loaded"/>
+        }
+
+        <div class="fake-ion-item ion-text-wrap" [hidden]="!question.loaded">
+            <div class="addon-qtype-ddwtos-container">
+                <core-format-text [component]="component" [componentId]="componentId" [text]="question.text" [contextLevel]="contextLevel"
+                    [contextInstanceId]="contextInstanceId" [courseId]="courseId" #questiontext (afterRender)="textRendered()" />
+
+                @if (question.answers) {
+                    <core-format-text [component]="component" [componentId]="componentId" [text]="question.answers"
+                        [contextLevel]="contextLevel" [contextInstanceId]="contextInstanceId" [courseId]="courseId"
+                        (filterContentRenderingComplete)="answersRendered()" />
+                }
+            </div>
+        </div>
+    </div>
+}

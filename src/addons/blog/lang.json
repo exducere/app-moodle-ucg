@@ -1,0 +1,21 @@
+{
+    "addnewentry": "Add a new entry",
+    "associatewithcourse": "Blog about course {{$a.coursename}}",
+    "associatewithmodule": "Blog about {{$a.modtype}}: {{$a.modname}}",
+    "associations": "Associations",
+    "blog": "Blog",
+    "blogdeleteconfirm": "Delete the blog entry '{{$a}}'?",
+    "blogentries": "Blog entries",
+    "entrybody": "Blog entry body",
+    "entrytitle": "Entry title",
+    "errorloadentries": "Error loading blog entries.",
+    "linktooriginalentry": "Original blog entry",
+    "noentriesyet": "No visible entries here",
+    "publishto": "Publish to",
+    "publishtonoone": "Yourself (draft)",
+    "publishtosite": "Anyone on this site",
+    "publishtoworld": "Anyone in the world",
+    "showonlyyourentries": "Show only your entries",
+    "siteblogheading": "Site blog",
+    "tags": "Tags"
+}

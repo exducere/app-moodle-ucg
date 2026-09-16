@@ -1,0 +1,45 @@
+@use "src/theme/helpers/helpers" as *;
+
+ion-item ion-icon {
+    display: inline-block;
+    border-radius: var(--mdl-shape-borderRadius-xs);
+    padding: 4px;
+    color: var(--text-color);
+    line-height: var(--size);
+    --margin-end: 8px;
+    @include margin-horizontal(null, var(--margin-end));
+}
+
+section.core-course-module-list-wrapper {
+    border: var(--ion-card-border-width) solid var(--ion-card-border-color);
+    border-radius: var(--ion-card-radius);
+    margin: 12px;
+
+    ion-card {
+        --ion-card-background: transparent;
+    }
+    ion-item {
+        --background: transparent;
+    }
+
+    ion-item-divider {
+        --background: transparent;
+    }
+}
+
+core-course-module.core-sitehome-news {
+    --card-border-width: var(--ion-card-border-width);
+    --card-radius: var(--ion-card-radius);
+    --activity-border: 1px solid var(--stroke);
+
+    ::ng-deep ion-card {
+        padding-top: 4px !important;
+        --card-padding-bottom: 4px;
+        --horizontal-spacing: 0px;
+        margin-left: 12px;
+        margin-right: 12px;
+        ion-item {
+            --padding-start: 16px;
+        }
+    }
+}

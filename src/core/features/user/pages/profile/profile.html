@@ -1,0 +1,167 @@
+@let userInfo = user();
+
+<ion-header collapsible>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ userInfo?.fullname }}</h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content [core-swipe-navigation]="users()" class="limited-width">
+    <ion-refresher slot="fixed" [disabled]="!userLoaded()" (ionRefresh)="refreshUser($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="userLoaded()" placeholderType="free">
+        <ion-list loading-placeholder class="ion-padding list-item-limited-width">
+            <ion-item>
+                <ion-avatar slot="start" style="width: 80px; height: 80px;">
+                    <ion-skeleton-text [animated]="true" />
+                </ion-avatar>
+                <ion-label>
+                    <h1>
+                        <ion-skeleton-text [animated]="true" style="width: 80%;" />
+                    </h1>
+                    <p>
+                        <ion-skeleton-text [animated]="true" style="width: 70%;" />
+                    </p>
+                    <p>
+                        <ion-skeleton-text [animated]="true" style="width: 30%;" />
+                    </p>
+                    <p>
+                        <ion-skeleton-text [animated]="true" style="width: 60%;" />
+                    </p>
+                </ion-label>
+            </ion-item>
+            <ion-item>
+                <ion-label>
+                    <ion-skeleton-text [animated]="true" style="width: 100%; height: 44px;" class="ion-margin" />
+                    <ion-skeleton-text [animated]="true" style="width: 100%; height: 44px;" class="ion-margin" />
+                </ion-label>
+            </ion-item>
+            @for (i of 15 | coreTimes; track i) {
+                <ion-item>
+                    <ion-label>
+                        <h3>
+                            <ion-skeleton-text [animated]="true" style="width: 100%;" />
+                        </h3>
+                        <p>
+                            <ion-skeleton-text [animated]="true" style="width: 60%;" />
+                        </p>
+                    </ion-label>
+                </ion-item>
+            }
+        </ion-list>
+        @if (userInfo && !isDeleted() && isEnrolled()) {
+            <ion-list>
+                <ion-item class="core-user-profile-maininfo ion-text-wrap" collapsible>
+                    <core-user-avatar [user]="userInfo" [linkProfile]="false" [checkOnline]="true" slot="start" />
+                    <ion-label>
+                        <h1>{{ userInfo.fullname }}</h1>
+                        @if (rolesFormatted()) {
+                            <p>
+                                <strong>{{ 'core.user.roles' | translate}}</strong>{{'core.labelsep' | translate}}
+                                {{ rolesFormatted() }}
+                            </p>
+                        }
+                        @if (userInfo.lastaccess !== undefined) {
+                            <p>
+                                <strong>{{ 'core.lastaccess' | translate }}: </strong>
+                                @if (userInfo.lastaccess) {
+                                    <span>{{ userInfo.lastaccess | coreTimeAgo }}</span>
+                                } @else {
+                                    {{ 'core.never' | translate }}
+                                }
+                            </p>
+                        }
+                    </ion-label>
+                </ion-item>
+
+                @let bHandlers = buttonHandlers();
+                @if (bHandlers.length || isLoadingHandlers()) {
+                    <div class="core-user-communication-handlers">
+                        @if (bHandlers.length) {
+                            <ion-item>
+                                <ion-label>
+                                    @for (handler of bHandlers; track handler.name) {
+                                        <ion-button expand="block" size="default"
+                                            [class]="['core-user-profile-handler', handler.class]"
+                                            (click)="handlerClicked($event, handler)"
+                                            [attr.aria-label]="handler.title | translate">
+                                            @if (handler.icon) {
+                                                <ion-icon [name]="handler.icon" slot="start" aria-hidden="true" />
+                                            }
+                                            {{ handler.title | translate }}
+                                        </ion-button>
+                                    }
+                                </ion-label>
+                            </ion-item>
+                        } @else {
+                            <div class="ion-text-center core-loading-handlers">
+                                <ion-spinner [attr.aria-label]="'core.loading' | translate" />
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (isLoadingHandlers()) {
+                    <ion-item class="ion-text-center core-loading-handlers">
+                        <ion-label>
+                            <ion-spinner [attr.aria-label]="'core.loading' | translate" />
+                        </ion-label>
+                    </ion-item>
+                }
+
+                @for (handler of listItemHandlers(); track handler.name) {
+                    @if ('component' in handler) {
+                        <core-dynamic-component [component]="handler.component" [data]="handler.componentData" />
+                    } @else {
+                        <ion-item button (click)="handlerClicked($event, handler)"
+                            [class]="['ion-text-wrap', 'core-user-profile-handler', handler.class]" [hidden]="handler.hidden"
+                            [attr.aria-label]="handler.title | translate" [detail]="true">
+                            @if (handler.icon) {
+                                <ion-icon [name]="handler.icon" slot="start" aria-hidden="true" />
+                            }
+                            <ion-label>
+                                <p class="item-heading">{{ handler.title | translate }}</p>
+                            </ion-label>
+                            @if (handler.showBadge) {
+                                <ion-badge slot="end" [hidden]="handler.loading || !handler.badge" aria-hidden="true">
+                                    {{handler.badge}}
+                                </ion-badge>
+                                @if (handler.badge && handler.badgeA11yText) {
+                                    <span class="sr-only">
+                                        {{ handler.badgeA11yText | translate: {$a : handler.badge } }}
+                                    </span>
+                                }
+                                @if (handler.loading) {
+                                    <ion-spinner slot="end" [attr.aria-label]="'core.loading' | translate" />
+                                }
+                            }
+                        </ion-item>
+                    }
+                }
+            </ion-list>
+        }
+
+        @if (!userInfo && !isDeleted() && isEnrolled() && !cannotViewProfile()) {
+            <core-empty-box icon="far-user" [message]="'core.user.detailsnotavailable' | translate" />
+        } @else if (cannotViewProfile()) {
+            <core-empty-box class="limited-profile">
+                <ion-icon aria-hidden="true" slot="icon-only" name="ucg-information-diamond" />
+                <h5>{{ 'core.user.limitedprofile' | translate }}</h5>
+                <p>{{ 'core.user.privateprofiledetails' | translate }}</p>
+            </core-empty-box>
+        }
+
+        @if (isDeleted()) {
+            <core-empty-box icon="far-user" [message]="'core.userdeleted' | translate" />
+        } @else if (isSuspended()) {
+            <core-empty-box icon="far-user" [message]="'core.usersuspended' | translate" />
+        } @else if (!isEnrolled()) {
+            <core-empty-box icon="far-user" [message]="'core.notenrolledprofile' | translate" />
+        }
+    </core-loading>
+</ion-content>

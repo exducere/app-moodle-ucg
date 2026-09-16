@@ -1,0 +1,84 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'addon.mod_quiz.review' | translate }}</h1>
+        </ion-title>
+
+        <ion-buttons slot="end">
+            @if (navigation.length) {
+                <ion-button fill="clear" [ariaLabel]="'addon.mod_quiz.opentoc' | translate" (click)="openNavigation()" aria-haspopup="true">
+                    <ion-icon name="fas-list-ul" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+            }
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content class="limited-width">
+    <ion-refresher slot="fixed" [disabled]="!loaded" (ionRefresh)="refreshData($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="loaded">
+
+        @if (attempt) {
+            <!-- Review summary -->
+            <ion-card>
+                <ion-list>
+                    <addon-mod-quiz-attempt-info [quiz]="quiz" [attempt]="attempt" [additionalData]="additionalData" />
+                </ion-list>
+            </ion-card>
+
+            @if (questions.length) {
+                <!-- Questions. -->
+                <ng-container *ngFor="let question of questions">
+                    <addon-mod-quiz-question-card [question]="question">
+                        <core-question class="ion-text-wrap" [question]="question" [component]="component" [componentId]="cmId"
+                            [attemptId]="attempt.id" [usageId]="attempt.uniqueid" [offlineEnabled]="false" contextLevel="module"
+                            [contextInstanceId]="cmId" [courseId]="courseId" [review]="true"
+                            [preferredBehaviour]="quiz?.preferredbehaviour" />
+                    </addon-mod-quiz-question-card>
+                </ng-container>
+
+                @if (showAll) {
+                    <core-infinite-loading [enabled]="canLoadMore" (action)="loadMore($event)" />
+                }
+            }
+        }
+        @if (loaded && numPages > 1) {
+            <div collapsible-footer appearOnBottom slot="fixed">
+                <ion-row class="ion-justify-content-between ion-align-items-center ion-no-padding ion-wrap">
+                    @if (!showAll) {
+                        <ion-col class="ion-text-start ion-no-padding core-navigation-arrow" size="auto">
+                            <ion-button [disabled]="previousPage < 0" fill="clear" [ariaLabel]="'core.previous' | translate"
+                                (click)="changePage(previousPage)">
+                                <ion-icon name="fas-chevron-left" slot="icon-only" aria-hidden="true" />
+                            </ion-button>
+                        </ion-col>
+                    }
+                    <ion-col class="ion-text-center">
+                        <!-- In review we can toggle between all questions in same page or one page at a time. -->
+                        @if (numPages > 1) {
+                            <ion-button class="ion-text-wrap" (click)="switchMode()" fill="outline">
+                                @if (!showAll) {
+                                    <span>{{ 'addon.mod_quiz.showall' | translate }}</span>
+                                } @else {
+                                    <span>{{ 'addon.mod_quiz.showeachpage' | translate }}</span>
+                                }
+                            </ion-button>
+                        }
+                    </ion-col>
+                    @if (!showAll) {
+                        <ion-col class="ion-text-end ion-no-padding core-navigation-arrow" size="auto">
+                            <ion-button [disabled]="nextPage >= numPages" fill="clear" [ariaLabel]="'core.next' | translate"
+                                (click)="changePage(nextPage)">
+                                <ion-icon name="fas-chevron-right" slot="icon-only" aria-hidden="true" />
+                            </ion-button>
+                        </ion-col>
+                    }
+                </ion-row>
+            </div>
+        }
+    </core-loading>
+</ion-content>

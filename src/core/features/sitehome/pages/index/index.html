@@ -1,0 +1,152 @@
+<core-navbar-buttons slot="end" prepend>
+    @if (searchEnabled) {
+        <ion-button fill="clear" (click)="openSearch()" [ariaLabel]="'core.courses.searchcourses' | translate">
+            <ion-icon name="fas-magnifying-glass" slot="icon-only" aria-hidden="true" />
+        </ion-button>
+    }
+</core-navbar-buttons>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!dataLoaded" (ionRefresh)="doRefresh($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="dataLoaded" placeholderType="column" placeholderHeight="48px">
+        <ion-list class="list-item-limited-width">
+            <!-- Site home main contents. -->
+            @if (section && section.hasContent) {
+                <section class="core-course-module-list-wrapper">
+                    @if (section.name || section.visible === 0 || section.availabilityinfo) {
+                        <ion-item-divider class="course-section ion-text-wrap"
+                            [class.item-dimmed]="section.visible === 0 || section.uservisible === false">
+                            <ion-label>
+                                @if (section.name) {
+                                    <h2 class="big" [id]="'core-section-name-' + section.id">
+                                        <core-format-text [text]="section.name" contextLevel="course" [contextInstanceId]="siteHomeId" />
+                                    </h2>
+                                }
+                                @if (section.visible === 0 && section.uservisible !== false) {
+                                    <div>
+                                        <ion-badge color="warning">
+                                            {{ 'core.course.hiddenfromstudents' | translate }}
+                                        </ion-badge>
+                                    </div>
+                                } @else if (section.visible === 0 && section.uservisible === false) {
+                                    <div>
+                                        <ion-badge color="warning">
+                                            {{ 'core.notavailable' | translate }}
+                                        </ion-badge>
+                                    </div>
+                                }
+                                @if (section.availabilityinfo) {
+                                    <div>
+                                        <ion-chip class="clickable">
+                                            <ion-icon name="fas-lock" [attr.aria-label]="'core.restricted' | translate" />
+                                            <ion-label>
+                                                <core-format-text [text]=" section.availabilityinfo" contextLevel="course"
+                                                    [contextInstanceId]="siteHomeId" />
+                                            </ion-label>
+                                        </ion-chip>
+                                    </div>
+                                }
+                            </ion-label>
+                        </ion-item-divider>
+                    }
+
+                    @if (section.summary) {
+                        <ion-item class="ion-text-wrap section-summary">
+                            <ion-label>
+                                <core-format-text [text]="section.summary" contextLevel="course" [contextInstanceId]="siteHomeId" />
+                            </ion-label>
+                        </ion-item>
+                    }
+
+                    @for (modOrSubsection of section.contents; track modOrSubsection.id) {
+                        @if (isModule(modOrSubsection)) {
+                            <core-course-module [module]="modOrSubsection" [section]="section" />
+                        }
+                    }
+                </section>
+            }
+
+            <!-- Site home items: news, categories, courses, etc. -->
+            @if (items.length > 0) {
+
+                @for (item of items; track item) {
+                    @switch (item) {
+                        @case ('LIST_OF_COURSE') {
+                            <ng-template *ngTemplateOutlet="allCourseList" />
+                        }
+                        @case ('LIST_OF_CATEGORIES') {
+                            <ng-template *ngTemplateOutlet="categories" />
+                        }
+                        @case ('COURSE_SEARCH_BOX') {
+                            <ng-template *ngTemplateOutlet="courseSearch" />
+                        }
+                        @case ('ENROLLED_COURSES') {
+                            <ng-template *ngTemplateOutlet="enrolledCourseList" />
+                        }
+                        @case ('NEWS_ITEMS') {
+                            <ng-template *ngTemplateOutlet="news" />
+                        }
+                    }
+                }
+            }
+        </ion-list>
+        @if (hasBlocks) {
+            <core-block-side-blocks-button slot="fixed" contextLevel="course" [instanceId]="siteHomeId" />
+        }
+
+        @if (!hasContent) {
+            <core-empty-box icon="fas-box-open" [message]="'core.course.nocontentavailable' | translate" />
+        }
+    </core-loading>
+</ion-content>
+
+<ng-template #allCourseList>
+    <ion-card>
+        <ion-item button class="ion-text-wrap" (click)="openAvailableCourses()">
+            <ion-icon name="ucg-graduation-cap" fixed-width slot="start" aria-hidden="true" />
+            <ion-label>
+                <p class="item-heading">{{ 'core.courses.availablecourses' | translate}}</p>
+            </ion-label>
+        </ion-item>
+    </ion-card>
+</ng-template>
+
+<ng-template #news>
+    @if (newsForumModule) {
+        <core-course-module class="core-sitehome-news" [module]="newsForumModule" />
+    }
+</ng-template>
+
+<ng-template #categories>
+    <ion-card>
+        <ion-item button class="ion-text-wrap" (click)="openCourseCategories()">
+            <ion-icon name="far-folder" slot="start" aria-hidden="true" />
+            <ion-label>
+                <p class="item-heading">{{ 'core.courses.categories' | translate}}</p>
+            </ion-label>
+        </ion-item>
+    </ion-card>
+</ng-template>
+
+<ng-template #enrolledCourseList>
+    <ion-card>
+        <ion-item button class="ion-text-wrap" (click)="openMyCourses()">
+            <ion-icon name="ucg-graduation-cap" fixed-width slot="start" aria-hidden="true" />
+            <ion-label>
+                <p class="item-heading">{{ 'core.courses.mycourses' | translate}}</p>
+            </ion-label>
+        </ion-item>
+    </ion-card>
+</ng-template>
+
+<ng-template #courseSearch>
+    <ion-card>
+        <ion-item button class="ion-text-wrap" (click)="openSearch()">
+            <ion-icon name="fas-magnifying-glass" slot="start" aria-hidden="true" />
+            <ion-label>
+                <p class="item-heading">{{ 'core.courses.searchcourses' | translate}}</p>
+            </ion-label>
+        </ion-item>
+    </ion-card>
+</ng-template>

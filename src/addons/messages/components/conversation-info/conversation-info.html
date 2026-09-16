@@ -1,0 +1,57 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            <h1>{{ 'addon.messages.groupinfo' | translate }}</h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="closeModal()" [ariaLabel]="'core.close' | translate">
+                <ion-icon name="fas-xmark" slot="icon-only" aria-hidden="true" />
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!loaded" (ionRefresh)="refreshData($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+
+    <core-loading [hideUntil]="loaded" placeholderType="imageandboxes">
+        @if (conversation) {
+            <ion-item class="ion-text-center">
+                <ion-label>
+                    <div class="large-avatar">
+                        <img class="avatar" [url]="conversation.imageurl" core-external-content [alt]="conversation.name"
+                            onError="this.src='assets/img/group-avatar.svg'">
+                    </div>
+                    <h2>
+                        <!-- WS didn't filter the name, see MDL-81815. -->
+                        <core-format-text [text]="conversation.name" contextLevel="system" [contextInstanceId]="0" [wsNotFiltered]="true" />
+                    </h2>
+                    <p>
+                        @if (conversation.subname) {
+                            <core-format-text [text]="conversation.subname" contextLevel="system" [contextInstanceId]="0" />
+                        }
+                    </p>
+                    <p>{{ 'addon.messages.numparticipants' | translate:{$a: conversation.membercount} }}</p>
+                </ion-label>
+            </ion-item>
+        }
+
+        @for (member of members; track member.id) {
+            <ion-item class="ion-text-wrap addon-messages-conversation-item" (click)="closeModal(member.id)"
+                [detail]="true" button>
+                <core-user-avatar [user]="member" [linkProfile]="false" [checkOnline]="member.showonlinestatus" slot="start" />
+                <ion-label>
+                    <p class="item-heading">
+                        {{ member.fullname }}
+                        @if (member.isblocked) {
+                            <ion-icon name="fas-user-slash" [attr.aria-label]="'addon.messages.contactblocked' | translate" />
+                        }
+                    </p>
+                </ion-label>
+            </ion-item>
+        }
+
+        <core-infinite-loading [enabled]="canLoadMore" (action)="loadMoreMembers($event)" [error]="loadMoreError" />
+    </core-loading>
+</ion-content>

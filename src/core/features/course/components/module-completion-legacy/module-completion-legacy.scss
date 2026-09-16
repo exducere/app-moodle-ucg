@@ -1,0 +1,27 @@
+:host {
+    display: contents;
+    --size: 20px;
+
+    img.core-completion-auto {
+        margin: 6px;
+    }
+
+    img {
+        width: var(--size);
+        max-width: none;
+        vertical-align: middle;
+    }
+
+    ion-button.core-completion-manual {
+        --padding-top: 0px;
+        --padding-start: 0px;
+        --padding-end: 0px;
+        --padding-bottom: 0px;
+        --a11y-target-min-size: 32px;
+        width: var(--a11y-target-min-size);
+        height: var(--a11y-target-min-size);
+        min-width: var(--a11y-target-min-size);
+        min-height: var(--a11y-target-min-size);
+        margin: 0px;
+    }
+}

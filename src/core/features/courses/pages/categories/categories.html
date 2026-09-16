@@ -1,0 +1,94 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>
+                <core-format-text [text]="title" contextLevel="coursecat" [contextInstanceId]="currentCategory && currentCategory!.id" />
+            </h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <core-context-menu>
+                @if (downloadCourseEnabled || downloadCoursesEnabled) {
+                    <core-context-menu-item [priority]="1000" [content]="'core.settings.showdownloadoptions' | translate"
+                        (action)="toggleDownload()" iconAction="toggle" [(toggle)]="downloadEnabled" />
+                }
+                <core-context-menu-item [priority]="900" [content]="'core.courses.showonlyenrolled' | translate" (action)="filterEnrolled()"
+                    iconAction="toggle" [(toggle)]="showOnlyEnrolled" />
+            </core-context-menu>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!categoriesLoaded" (ionRefresh)="refreshCategories($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="categoriesLoaded" placeholderType="column" placeholderHeight="108px">
+        <ion-list class="list-item-limited-width">
+            @if (currentCategory) {
+                <ion-item class="ion-text-wrap">
+                    <ion-icon name="fas-folder" slot="start" [attr.aria-label]="'core.category' | translate" />
+                    <ion-label>
+                        <p class="item-heading">
+                            <core-format-text [text]="currentCategory.name" contextLevel="coursecat"
+                                [contextInstanceId]="currentCategory.id" />
+                        </p>
+                        @if (currentCategory.description) {
+                            <p>
+                                <core-format-text [text]="currentCategory.description" collapsible-item contextLevel="coursecat"
+                                    [contextInstanceId]="currentCategory.id" />
+                            </p>
+                        }
+                    </ion-label>
+                </ion-item>
+            }
+
+            @if (categories.length > 0) {
+                <div class="core-category-list">
+                    <ion-item-divider>
+                        <ion-label>
+                            <h2 class="big">{{ 'core.courses.categories' | translate }}</h2>
+                        </ion-label>
+                    </ion-item-divider>
+                    <ion-card *ngFor="let category of categories" [attr.data-category-id]="category.id">
+                        <ion-item button class="ion-text-wrap" (click)="openCategory(category.id)" [attr.aria-label]="category.name"
+                            [detail]="true">
+                            <ion-icon name="fas-folder" slot="start" [attr.aria-label]="'core.category' | translate" />
+                            <ion-label>
+                                <p class="item-heading">
+                                    <core-format-text [text]="category.name" contextLevel="coursecat" [contextInstanceId]="category.id" />
+                                </p>
+                            </ion-label>
+                            @if (!showOnlyEnrolled && category.coursecount > 0) {
+                                <ion-badge slot="end" color="light">
+                                    <span aria-hidden="true">{{ category.coursecount }}</span>
+                                    <span
+                                        class="sr-only">{{ 'core.courses.therearecourses' | translate:{ $a: category.coursecount } }}</span>
+                                </ion-badge>
+                            }
+                        </ion-item>
+                    </ion-card>
+                </div>
+            }
+
+            @if (courses.length > 0) {
+                <div class="core-course-list">
+                    <ion-item-divider>
+                        <ion-label>
+                            @if (!showOnlyEnrolled) {
+                                <h2 class="big">{{ 'core.courses.courses' | translate }}</h2>
+                            } @else {
+                                <h2 class="big">{{ 'core.courses.mycourses' | translate }}</h2>
+                            }
+                        </ion-label>
+                    </ion-item-divider>
+                    <core-courses-course-list-item *ngFor="let course of courses" [course]="course" [showDownload]="downloadEnabled" />
+                </div>
+            }
+        </ion-list>
+        @if (!categories.length && !courses.length) {
+            <core-empty-box icon="ucg-graduation-cap" [message]="'core.courses.nocoursesyet' | translate" />
+        }
+    </core-loading>
+</ion-content>

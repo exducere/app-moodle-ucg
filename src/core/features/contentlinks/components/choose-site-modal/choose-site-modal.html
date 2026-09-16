@@ -1,0 +1,29 @@
+<core-loading [hideUntil]="loaded">
+    <ion-list class="ion-margin">
+        <ion-item class="ion-text-wrap">
+            <ion-label>
+                <h2 class="item-heading">{{ 'core.contentlinks.chooseaccounttoopenlink' | translate }}</h2>
+                @if (sites().length && siteName()) {
+                    <p><core-format-text [text]="siteName()" [clean]="true" [siteId]="sites()[0].id" /></p>
+                }
+                @if (siteUrl()) {
+                    <p>{{ siteUrl() }}</p>
+                }
+            </ion-label>
+        </ion-item>
+
+        @for (site of sites(); track site.id) {
+            <ion-item (click)="siteClicked(site.id)" [detail]="false" button>
+                <core-user-avatar [user]="site.user" slot="start" [linkProfile]="false" />
+                <ion-label>
+                    <p class="item-heading">{{site.fullname}}</p>
+                </ion-label>
+            </ion-item>
+        }
+    </ion-list>
+
+    <ion-button expand="block" class="ion-margin" (click)="addNewSite()" [ariaLabel]="'core.login.add' | translate">
+        {{ 'core.login.add' | translate }}
+    </ion-button>
+
+</core-loading>

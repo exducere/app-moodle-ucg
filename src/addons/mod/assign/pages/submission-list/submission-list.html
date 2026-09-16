@@ -1,0 +1,92 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>
+                <core-format-text [text]="title" contextLevel="module" [contextInstanceId]="moduleId" [courseId]="courseId" />
+            </h1>
+        </ion-title>
+
+        <ion-buttons slot="end" />
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <core-split-view>
+        <ion-refresher slot="fixed" [disabled]="!submissions.loaded" (ionRefresh)="refreshList($event.target)">
+            <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+        </ion-refresher>
+        <core-loading [hideUntil]="submissions.loaded">
+            <ion-list>
+                <core-group-selector [groupInfo]="groupInfo" [(selected)]="groupId" (selectedChange)="reloadSubmissions()"
+                    [courseId]="courseId" />
+
+                <!-- List of submissions. -->
+                @for (submission of submissions.items; track submission.id) {
+                    <ion-item class="ion-text-wrap" (click)="submissions.select(submission)" button
+                        [attr.aria-current]="submissions.getItemAriaCurrent(submission)" [detail]="true">
+                        @if (submission.userfullname) {
+                            <core-user-avatar [user]="submission" [linkProfile]="false" slot="start" />
+                        } @else {
+                            <core-user-avatar [linkProfile]="false" slot="start" />
+                        }
+                        <ion-label>
+                            <p class="item-heading">
+                                @if (submission.userfullname) {
+                                    {{submission.userfullname}}
+                                } @else {
+                                    {{ 'addon.mod_assign.hiddenuser' | translate }} {{submission.blindid}}
+                                }
+                            </p>
+                            @if (assign && assign.teamsubmission) {
+                                <p>
+                                    @if (submission.groupname) {
+                                        <span class="core-groupname">
+                                            <core-format-text [text]="submission.groupname" contextLevel="course"
+                                                [contextInstanceId]="courseId" />
+                                        </span>
+                                    } @else if (assign.preventsubmissionnotingroup){
+                                        @if (submission.noGroups && !submission.blindid) {
+                                            <span class="text-danger">
+                                                {{ 'addon.mod_assign.noteam' | translate }}
+                                            </span>
+                                        }
+                                        @if (submission.manyGroups && !submission.blindid) {
+                                            <span class="text-danger">
+                                                {{ 'addon.mod_assign.multipleteams' | translate }}
+                                            </span>
+                                        }
+                                    } @else {
+                                        <span>
+                                            {{ 'addon.mod_assign.defaultteam' | translate }}
+                                        </span>
+                                    }
+                                </p>
+                            }
+                            @if (submission.statusTranslated) {
+                                <p>
+                                    <ion-badge class="ion-text-start ion-text-wrap" [color]="submission.statusColor">
+                                        {{ submission.statusTranslated }}
+                                    </ion-badge>
+                                </p>
+                            }
+                            @if (submission.gradingStatusTranslationId) {
+                                <p>
+                                    <ion-badge class="ion-text-start ion-text-wrap" [color]="submission.gradingColor">
+                                        {{ submission.gradingStatusTranslationId | translate }}
+                                    </ion-badge>
+                                </p>
+                            }
+                        </ion-label>
+                    </ion-item>
+                }
+            </ion-list>
+
+            @if (!submissions || submissions.empty) {
+                <core-empty-box icon="fas-file-signature" [message]="'addon.mod_assign.submissionstatus_' | translate" />
+            }
+        </core-loading>
+    </core-split-view>
+</ion-content>

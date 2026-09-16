@@ -1,0 +1,11 @@
+:host {
+    .core-swipe-slides-container {
+        ion-card {
+            flex: none;
+        }
+    }
+
+    .has-collapsible-footer ::ng-deep swiper-container::part(container) {
+        padding-bottom: 50px;
+    }
+}

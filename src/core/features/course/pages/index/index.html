@@ -1,0 +1,47 @@
+<ion-header [collapsible]="(tabsComponent()?.selectedIndex === 0 || tabsComponent()?.selectedIndex === undefined)">
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1 core-page-title>
+                <core-format-text [text]="title" contextLevel="course" [contextInstanceId]="course?.id" />
+            </h1>
+        </ion-title>
+
+        <ion-buttons slot="end">
+            @if (course?.format !== 'singleactivity') {
+                <ion-button fill="clear" (click)="openCourseSummary()" [ariaLabel]="'core.course.coursesummary' | translate">
+                    <ion-icon name="ucg-information-diamond" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+
+                <!-- Add an empty context menu so tab pages can add items, otherwise the menu disappears in some cases. -->
+                <core-context-menu />
+            } @else {
+                <core-context-menu>
+                    <core-context-menu-item [priority]="1" [content]="'core.course.coursesummary' | translate"
+                        (action)="openCourseSummary()" iconAction="ucg-graduation-cap" />
+                </core-context-menu>
+            }
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<div class="core-course-header">
+    <ion-item class="core-format-progress-list ion-text-wrap list-item-limited-width" collapsible>
+        @if (course) {
+            <core-course-image [course]="course" />
+        }
+
+        <ion-label>
+            <h1>
+                <core-format-text [text]="title" contextLevel="course" [contextInstanceId]="course?.id" />
+            </h1>
+            @if (progress !== undefined) {
+                <div class="core-course-progress">
+                    <core-progress-bar [progress]="progress" a11yText="core.course.aria:sectionprogress" />
+                </div>
+            }
+        </ion-label>
+    </ion-item>
+</div>
+<core-tabs-outlet [tabs]="tabs" [hideUntil]="loaded" (ionChange)="tabSelected()" />

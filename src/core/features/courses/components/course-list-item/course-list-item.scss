@@ -1,0 +1,234 @@
+@use "src/theme/globals" as *;
+
+:host {
+    --avatar-radius: var(--core-courseimage-radius);
+    --avatar-size: 60px;
+    --avatar-margin: 16px;
+
+    --card-vertical-margin: 8px;
+    --card-radius: 12px;
+
+    --shortname-size: 12px;
+
+    --button-size: 44px;
+    --button-padding: 10px;
+    --button-radius: 50%;
+    --button-background: rgb(255 255 255 / 50%);
+
+    @include media-breakpoint-down(md) {
+        --avatar-size: 48px;
+        --avatar-margin: 12px;
+    }
+}
+
+
+:host-context(:root.dark) {
+    --button-background: rgb(0 0 0 / 30%);
+}
+
+// Common styles.
+.item-heading ion-icon {
+    @include margin-horizontal(null, 4px);
+    color: var(--core-star-color);
+}
+
+button {
+    z-index: 1;
+}
+
+ion-card {
+    --border-radius: var(--card-radius);
+
+    ion-ripple-effect {
+        z-index: 1;
+    }
+}
+
+.core-button-spinner {
+    margin: 0;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+    @include position(8px, 8px, null, null);
+
+    ion-spinner {
+        margin-top: 4px;
+    }
+
+    ::ng-deep ion-button {
+        --border-radius: var(--button-radius);
+        --background: var(--button-background);
+        --padding-top: var(--button-padding);
+        --padding-end: var(--button-padding);
+        --padding-bottom: var(--button-padding);
+        --padding-start: var(--button-padding);
+        width: var(--button-size);
+        height: var(--button-size);
+        margin: 0;
+        &::part(native) {
+            background: var(--background);
+        }
+    }
+
+    core-download-refresh ::ng-deep .core-icon-downloaded {
+        display: none;
+    }
+}
+
+.core-course-enrol-icons, .core-icon-downloaded {
+    @include margin-horizontal(4px, 0px);
+}
+
+.core-course-shortname {
+    font-size: var(--shortname-size);
+    color: var(--dark);
+    @include ellipsis();
+}
+
+ion-chip {
+    margin-top: 8px;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 100%;
+
+    &.core-course-category {
+        @include margin-horizontal(0px, 8px);
+    }
+}
+
+
+// List layout.
+ion-card.core-course-list-item {
+    max-width: var(--list-item-max-width);
+
+    core-course-image {
+        --core-image-radius: var(--avatar-radius);
+        --core-image-size: var(--avatar-size);
+        @include margin(var(--avatar-margin), var(--avatar-margin), var(--avatar-margin), null);
+    }
+
+    ion-item::part(native) {
+        --padding-start: var(--avatar-margin);
+    }
+
+    .core-course-maininfo {
+        @include margin-horizontal(null, 32px);
+    }
+
+    @if ($core-course-hide-progress-on-list-items) {
+        .core-course-progress {
+            display: none;
+        }
+    }
+}
+
+// Card layout.
+ion-card.core-course-list-card {
+    &::part(native) {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        height: 100%;
+    }
+
+    height: calc(100% - var(--card-vertical-margin) - var(--card-vertical-margin));
+    margin-top: var(--card-vertical-margin);
+    margin-bottom: var(--card-vertical-margin);
+
+    core-course-image {
+        --core-course-card-image-aspect-ratio: 5/2;
+    }
+
+    .core-course-shortname {
+        margin-bottom: 8px;
+    }
+
+    ion-item {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+
+        &::part(native) {
+            flex-grow: 1;
+            align-items: self-start;
+        }
+
+        > ion-label{
+            margin: 16px 0;
+
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            align-self: stretch;
+            flex-grow: 1;
+
+            // Clamp one line with ellipsis on tablet view, and 2 in mobile.
+            .item-heading {
+                @include ellipsis();
+            }
+
+            @include media-breakpoint-down(md) {
+                .item-heading {
+                    // Addition lines for 2 line or multiline ellipsis
+                    @include ellipsis(2);
+                }
+            }
+
+            .core-course-maininfo {
+                flex-grow: 1;
+                max-width: 100%;
+            }
+
+            .core-course-progress {
+                align-self: stretch;
+            }
+        }
+    }
+
+    @if ($core-course-hide-thumb-on-cards) {
+        core-course-image {
+            display: none;
+        }
+    }
+
+    @if ($core-course-thumb-on-cards-background) {
+        core-course-image {
+            background: $core-course-thumb-on-cards-background !important;
+        }
+    }
+
+    @if ($core-course-hide-progress-on-cards) {
+        .core-course-progress {
+            display: none;
+        }
+    }
+}
+
+:host-context(.core-horizontal-scroll) {
+    @include horizontal_scroll_item(80%, 250px, 300px);
+
+    ion-card.core-course-list-card {
+        core-course-image {
+            --core-course-card-image-aspect-ratio: 10/3;
+        }
+
+        ion-item {
+            --padding-start: 8px;
+            --inner-padding-end: 8px;
+
+            > ion-label {
+                margin: 8px 0;
+
+                .item-heading {
+                    display: block;
+                }
+
+                .item-heading ion-icon {
+                    margin-right: 2px;
+                }
+            }
+        }
+    }
+}

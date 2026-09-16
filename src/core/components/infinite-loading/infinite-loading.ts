@@ -1,0 +1,152 @@
+// (C) Copyright 2015 Moodle Pty Ltd.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import { toBoolean } from '@/core/transforms/boolean';
+import { Component, ElementRef, input, viewChild, output, effect, signal, inject } from '@angular/core';
+import { IonInfiniteScroll } from '@ionic/angular';
+import { CoreWait } from '@static/wait';
+import { CoreBaseModule } from '@/core/base.module';
+import { CoreUpdateNonReactiveAttributesDirective } from '@directives/update-non-reactive-attributes';
+
+const THRESHOLD = .15; // % of the scroll element height that must be close to the edge to consider loading more items necessary.
+
+/**
+ * Component to show a infinite loading trigger and spinner while more data is being loaded.
+ *
+ * Usage:
+ * <core-infinite-loading [action]="loadingAction" [enabled]="dataLoaded"></core-infinite-loading>
+ */
+@Component({
+    selector: 'core-infinite-loading',
+    templateUrl: 'core-infinite-loading.html',
+    imports: [
+        CoreBaseModule,
+        CoreUpdateNonReactiveAttributesDirective,
+    ],
+})
+export class CoreInfiniteLoadingComponent {
+
+    readonly enabled = input.required<boolean, unknown>({ transform: toBoolean });
+    readonly error = input(false, { transform: toBoolean });
+    readonly position = input<'top' | 'bottom'>('bottom');
+    readonly action = output<() => void>(); // Will emit an event when triggered.
+
+    readonly infiniteScroll = viewChild(IonInfiniteScroll);
+
+    readonly loadingMore = signal(false); // Hide button and avoid loading more.
+    readonly loadingForced = signal(false); // Whether loading is forced or happened on scroll.
+    hostElement: HTMLElement = inject(ElementRef).nativeElement;
+
+    constructor() {
+        effect(() => {
+            if (this.position() === 'bottom') {
+                // If the list doesn't fill the full height, infinite scroll isn't triggered automatically.
+                this.checkScrollDistance();
+            }
+        });
+    }
+
+    /**
+     * Checks scroll distance to the beginning/end to load more items if needed.
+     *
+     * Previously, this function what firing an scroll event but now we have to calculate the distance
+     * like the Ionic component does.
+     */
+    protected async checkScrollDistance(): Promise<void> {
+        const enabled = this.enabled();
+        if (!enabled || this.error() || this.loadingMore()) {
+            return;
+        }
+
+        const scrollElement = await this.hostElement.closest('ion-content')?.getScrollElement();
+
+        if (!scrollElement) {
+            return;
+        }
+
+        // Wait to allow items to render and scroll content to grow.
+        await CoreWait.nextTick();
+        await CoreWait.waitFor(() => scrollElement.scrollHeight > scrollElement.clientHeight, { timeout: 1000 });
+
+        // Calculate distance from edge.
+        const infiniteHeight = this.hostElement.getBoundingClientRect().height;
+        const scrollTop = scrollElement.scrollTop;
+        const height = scrollElement.offsetHeight;
+        const threshold = height * THRESHOLD;
+        const distanceFromInfinite = (this.position() === 'bottom')
+            ? scrollElement.scrollHeight - infiniteHeight - scrollTop - threshold - height
+            : scrollTop - infiniteHeight - threshold;
+
+        // If it's close enough the edge, trigger the action to load more items.
+        if (distanceFromInfinite < 0 && !this.loadingMore() && enabled) {
+            this.loadMore();
+        }
+    }
+
+    /**
+     * Load More items calling the action provided.
+     *
+     * @param forced Whether loading happened on scroll or was forced.
+     */
+    loadMore(forced = false): void {
+        if (this.loadingMore()) {
+            return;
+        }
+
+        this.loadingMore.set(true);
+        this.loadingForced.set(forced);
+
+        this.action.emit(() => this.complete());
+    }
+
+    /**
+     * Fire the infinite scroll load more action if needed.
+     */
+    async fireInfiniteScrollIfNeeded(): Promise<void> {
+        this.checkScrollDistance();
+    }
+
+    /**
+     * Complete loading.
+     */
+    async complete(): Promise<void> {
+        // Wait a bit before allowing loading more, otherwise it could be re-triggered automatically when it shouldn't.
+        await CoreWait.wait(400);
+
+        await this.completeLoadMore();
+    }
+
+    /**
+     * Complete loading.
+     */
+    protected async completeLoadMore(): Promise<void> {
+        this.loadingMore.set(false);
+        this.loadingForced.set(false);
+
+        await this.infiniteScroll()?.complete();
+
+        // More items loaded. If the list doesn't fill the full height, infinite scroll isn't triggered automatically.
+        this.checkScrollDistance();
+    }
+
+    /**
+     * Get the infinite scroll element.
+     *
+     * @returns Element or null.
+     */
+    get infiniteScrollElement(): HTMLIonInfiniteScrollElement | null {
+        return this.hostElement.querySelector('ion-infinite-scroll');
+    }
+
+}

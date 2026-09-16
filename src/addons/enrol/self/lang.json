@@ -1,0 +1,6 @@
+{
+    "confirmselfenrol": "Are you sure you want to enrol yourself in this course?",
+    "errorselfenrol": "An error occurred while self enrolling.",
+    "password": "Enrolment key",
+    "pluginname": "Self enrolment"
+}

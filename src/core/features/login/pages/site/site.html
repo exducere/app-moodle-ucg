@@ -1,0 +1,86 @@
+<ion-header class="ion-no-border">
+    <ion-toolbar>
+        <div class="brand-header">
+            <div class="brand-identity" aria-label="Universidad Casa Grande, campus virtual">
+                <span class="brand-mark" aria-hidden="true">
+                    <ion-icon slot="icon-only" name="ucg-university" aria-hidden="true" />
+                </span>
+                <span class="brand-copy">
+                    <strong>Universidad Casa Grande</strong>
+                    <span>Campus virtual</span>
+                </span>
+            </div>
+
+            <ion-button
+                fill="clear"
+                class="settings-button"
+                (click)="openSettings()"
+                [ariaLabel]="'core.settings.appsettings' | translate">
+                <ion-icon slot="icon-only" name="ucg-setting-07" aria-hidden="true" />
+            </ion-button>
+        </div>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+    <main class="platform-selector">
+        <section class="intro" aria-labelledby="platforms-title">
+            <span class="intro__eyebrow">
+                <span aria-hidden="true"></span>
+                Acceso estudiantil
+            </span>
+            <h1 id="platforms-title">Elige tu aula virtual</h1>
+            <p>Ingresa con tus credenciales institucionales al espacio de tu programa.</p>
+        </section>
+
+        <section class="platforms" aria-label="Plataformas disponibles">
+            <div class="platform-grid">
+                @for (site of institutionalSites; track site.url) {
+                    <button
+                        type="button"
+                        [class]="'platform-card ' + site.className"
+                        (click)="connect(site.url, $event)"
+                        [attr.aria-label]="'Ingresar a ' + site.name">
+                        <span class="platform-card__icon" aria-hidden="true">
+                            <ion-icon [name]="site.icon" />
+                        </span>
+                        <span class="platform-card__content">
+                            <span class="platform-card__category">{{ site.category }}</span>
+                            <strong>{{ site.name }}</strong>
+                            <span>{{ site.description }}</span>
+                        </span>
+                        <span class="platform-card__arrow" aria-hidden="true">
+                            <ion-icon name="fas-arrow-right" />
+                        </span>
+                    </button>
+                }
+            </div>
+        </section>
+
+        <button
+            type="button"
+            class="support-panel"
+            (click)="showHelp()"
+            aria-haspopup="dialog"
+            aria-label="Consultar opciones de soporte para ingresar">
+            <span class="support-panel__icon" aria-hidden="true">
+                <ion-icon name="fas-circle-question" />
+            </span>
+            <span class="support-panel__copy">
+                <strong>¿Necesitas ayuda para ingresar?</strong>
+                <span>Contacta al equipo de soporte.</span>
+            </span>
+            <span class="support-panel__arrow" aria-hidden="true">
+                <ion-icon name="fas-arrow-right" />
+            </span>
+        </button>
+    </main>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+    <ion-toolbar>
+        <div class="app-footer">
+            <span>Versión {{ appVersion }}</span>
+        </div>
+    </ion-toolbar>
+</ion-footer>

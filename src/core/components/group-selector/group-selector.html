@@ -1,0 +1,23 @@
+@let groupInfoValue = groupInfo();
+@if (groupInfoValue && groupInfoValue.groups.length > 0 && (groupInfoValue.separateGroups || groupInfoValue.visibleGroups)) {
+    @let message = multipleGroupsMessage();
+    @if (message && groupInfoValue.groups && groupInfoValue.groups.length > 1) {
+        <core-alert-card type="info" [message]="message" />
+    }
+
+    <ion-item class="ion-text-wrap core-group-selector" lines="full">
+        <ion-icon name="fas-user-group" slot="start" aria-hidden="true" />
+        <ion-select [(ngModel)]="selected" interface="action-sheet" [cancelText]="'core.cancel' | translate"
+            [interfaceOptions]="{header: 'core.group' | translate}">
+            <p class="item-heading" slot="label">
+                {{ (groupInfoValue.separateGroups ? 'core.groupsseparate': 'core.groupsvisible') | translate }}
+            </p>
+            @for (group of groupInfoValue.groups; track group.id) {
+                <ion-select-option [value]="group.id">
+                    <core-format-text [text]="group.name" contextLevel="course" [contextInstanceId]="courseId()" [wsNotFiltered]="true" />
+                </ion-select-option>
+            }
+        </ion-select>
+    </ion-item>
+
+}

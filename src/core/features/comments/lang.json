@@ -1,0 +1,11 @@
+{
+    "addcomment": "Add a comment...",
+    "comments": "Comments",
+    "commentscount": "Comments ({{$a}})",
+    "commentsnotworking": "Comments cannot be retrieved",
+    "deletecommentbyon": "Delete comment posted by {{$a.user}} on {{$a.time}}",
+    "eventcommentdeleted": "Comment deleted",
+    "nocomments": "No comments",
+    "savecomment": "Save comment",
+    "warningcommentsnotsent": "Couldn't sync comments. {{error}}"
+}

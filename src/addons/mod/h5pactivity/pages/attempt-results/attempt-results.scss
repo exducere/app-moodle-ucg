@@ -1,0 +1,53 @@
+@use "src/theme/globals" as *;
+
+:host {
+
+    ion-card {
+       margin-top: 0;
+    }
+
+    .core-warning-item {
+        --inner-border-width: 0px;
+    }
+
+    .addon-mod_h5pactivity-result-grid {
+        --ion-grid-padding: 0;
+        --ion-grid-column-padding: 8px;
+        font-size: 1rem;
+        ion-row {
+            @include padding-horizontal(8px);
+            &:nth-child(even) {
+                background-color: var(--light);
+            }
+        }
+        ion-col[role=columnheader] {
+            font-weight: bold;
+        }
+        ion-col[role=gridcell] {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    .addon-mod_h5pactivity-result-score {
+        margin: 16px;
+        font-size: 1rem;
+        font-weight: bold;
+        text-align: end;
+    }
+
+    ion-item.addon-mod_h5pactivity-result-unsupported {
+        --color-tint: var(--ion-color-warning-tint);
+        --color-shade: var(--ion-color-warning-shade);
+        --background: var(--color-tint);
+        --color: var(--color-shade);
+        border-radius: var(--mdl-shape-borderRadius-xs);
+        @include margin(0, 16px, 16px, 16px);
+        > ion-icon[slot] {
+            color: var(--color-shade);
+            @include margin-horizontal(null, 16px);
+        }
+    }
+}

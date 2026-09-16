@@ -1,0 +1,45 @@
+os: linux
+dist: noble
+language: java
+node_js: lts/krypton
+jdk: openjdk17
+
+git:
+  depth: 3
+
+if: env(DEPLOY) = 1 OR (env(DEPLOY) = 2 AND tag IS NOT blank)
+
+env:
+  - ANDROID_PLATFORM_VERSION=37.0 ANDROID_BUILD_TOOLS_VERSION="36.1.0"
+
+addons:
+  apt:
+    packages:
+    - libsecret-1-dev
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  npm: true
+  directories:
+    - $HOME/.npm
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache
+    - $HOME/Library/Caches/Homebrew
+
+before_install:
+  - echo -e "machine github.com\n login $GIT_TOKEN" > ~/.netrc
+  - nvm install
+  - node --version
+  - npm --version
+  - nvm --version
+  - npm ci --no-audit
+
+before_script:
+  - npx gulp
+
+script:
+  - scripts/build.sh

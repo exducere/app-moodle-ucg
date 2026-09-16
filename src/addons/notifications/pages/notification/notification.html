@@ -1,0 +1,97 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'addon.notifications.notifications' | translate }}</h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content [core-swipe-navigation]="notifications">
+    <core-loading [hideUntil]="loaded" placeholderType="free">
+        <ion-list loading-placeholder class="ion-padding list-item-limited-width">
+            <ion-item>
+                <ion-avatar slot="start">
+                    <ion-skeleton-text [animated]="true" />
+                </ion-avatar>
+                <ion-label>
+                    <h3>
+                        <ion-skeleton-text [animated]="true" style="width: 80%;" />
+                    </h3>
+                    <p>
+                        <ion-skeleton-text [animated]="true" style="width: 60%;" />
+                    </p>
+                </ion-label>
+            </ion-item>
+            <ion-item>
+                <ion-label>
+                    <ion-skeleton-text [animated]="true" style="width: 100%; height: 80px;" />
+                </ion-label>
+            </ion-item>
+        </ion-list>
+        @if (notification) {
+            <div class="list-item-limited-width">
+
+                <ion-item class="ion-text-wrap core-notification-title" lines="full">
+                    @if (notification.useridfrom > 0) {
+                        <core-user-avatar slot="start" [user]="notification.userFrom" [courseId]="notification.courseid">
+                            @if (notification.iconurl) {
+                                <div class="core-avatar-extra-img">
+                                    <img [url]="notification.iconurl" alt="" role="presentation" core-external-content>
+                                </div>
+                            }
+                        </core-user-avatar>
+                    } @else {
+
+                        @if (notification.imgUrl) {
+                            <img class="core-notification-img" [url]="notification.imgUrl" core-external-content alt="" role="presentation"
+                                slot="start">
+                        } @else {
+                            <div class="core-notification-icon" slot="start">
+                                @if (notification.iconurl) {
+                                    <img [url]="notification.iconurl" core-external-content alt="" role="presentation">
+                                } @else {
+                                    <ion-icon name="ucg-notification-03" aria-hidden="true" />
+                                }
+                            </div>
+                        }
+
+                    }
+
+                    <ion-label>
+                        <p class="item-heading">
+                            <core-format-text [text]="notification.subject" contextLevel="system" [contextInstanceId]="0"
+                                [wsNotFiltered]="true" />
+                        </p>
+                        @if (notification.timecreated > 0) {
+                            <p>
+                                {{ notification.timecreated | coreTimeAgo }}
+                                @if (notification.useridfrom > 0) {
+                                    · {{ notification.userfromfullname }}
+                                }
+                            </p>
+                        }
+                    </ion-label>
+                </ion-item>
+                <ion-item class="ion-text-wrap core-notification-body">
+                    <ion-label>
+                        <core-format-text [text]="notification.mobiletext | coreCreateLinks" contextLevel="system"
+                            [contextInstanceId]="0" />
+                    </ion-label>
+                </ion-item>
+            </div>
+        }
+
+        @if (loaded && actions && actions.length > 0) {
+            <div collapsible-footer appearOnBottom slot="fixed">
+                <div class="list-item-limited-width adaptable-buttons-row">
+                    <ion-button expand="block" (click)="action.action(action.sites[0])" *ngFor="let action of actions">
+                        <ion-icon slot="start" name="{{action.icon}}" aria-hidden="true" />
+                        {{ action.message | translate }}
+                    </ion-button>
+                </div>
+            </div>
+        }
+    </core-loading>
+</ion-content>

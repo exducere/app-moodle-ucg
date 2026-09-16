@@ -1,0 +1,91 @@
+@use "src/theme/globals" as *;
+
+:host {
+    display: inline-block;
+    --size: var(--module-icon-size, 32px);
+    --padding-start: var(--module-icon-padding, 4px);
+    --padding-top: var(--module-icon-padding, 4px);
+    --padding-end: var(--module-icon-padding, 4px);
+    --padding-bottom: var(--module-icon-padding, 4px);
+    --icon-radius: var(--module-icon-radius, var(--mdl-shape-borderRadius-xs));
+    --margin-end: 0px;
+    --margin-vertical: 0px;
+
+    min-width: calc(var(--size) + var(--padding-start) + var(--padding-end));
+    min-height: calc(var(--size) + var(--padding-top) + var(--padding-bottom));
+
+    margin-top: var(--margin-vertical);
+    margin-bottom: var(--margin-vertical);
+    @include margin-horizontal(0px, var(--margin-end));
+
+    border-radius: var(--icon-radius);
+    @include padding(var(--padding-top), var(--padding-end), var(--padding-bottom), var(--padding-start));
+    background-color: transparent;
+    line-height: var(--size);
+
+    /* Fix for iOS rendering bug: when combining filter and margin
+        with a nearby overflow: scroll element, the filter may render incorrectly.
+        Applying transform: translateZ(0) forces proper GPU compositing. */
+    transform: translateZ(0);
+
+    &.colorize {
+        &.version_current {
+            @each $type, $value in $activity-icon-color-filters {
+                &.#{$type}:not(.branded) {
+                    img {
+                        filter: var(--activity#{$type});
+                    }
+                }
+            }
+        }
+
+        &.version_40 {
+            background-color: var(--gray-100);
+
+            @each $type, $value in $activity-icon-background-colors {
+                &.#{$type}:not(.branded) {
+                    background-color: var(--activity-40-#{$type});
+                    img {
+                        filter: brightness(0) invert(1);
+                    }
+                }
+            }
+        }
+    }
+
+    &.version_40,
+    &.version_legacy {
+        --size: var(--module-legacy-icon-size, 24px);
+        --padding-start: var(--module-legacy-icon-padding, 8px);
+        --padding-top: var(--module-legacy-icon-padding, 8px);
+        --padding-end: var(--module-legacy-icon-padding, 8px);
+        --padding-bottom: var(--module-legacy-icon-padding, 8px);
+    }
+
+    img {
+        width: var(--size);
+        height: var(--size);
+        max-width: var(--size);
+        max-height: var(--size);
+        min-width: var(--size);
+        min-height: var(--size);
+        vertical-align: top;
+    }
+}
+
+:host-context(ion-item) {
+    --margin-vertical: 12px;
+    --margin-end: 1rem;
+}
+
+:host-context(ion-card ion-item) {
+    --margin-vertical: 12px;
+    --margin-end: 12px;
+}
+
+:host-context(:root.dark) {
+    &.version_40:not(.colorize),
+    &.version_current {
+        background-color: var(--white);
+    }
+}

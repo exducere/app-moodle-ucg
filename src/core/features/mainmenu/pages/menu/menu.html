@@ -1,0 +1,40 @@
+<ion-tabs #mainTabs [hidden]="!showTabs" [class]="'placement-' + tabsPlacement() + ' tab-'+selectedTab"
+    (ionTabsDidChange)="tabChanged($event)" [class.tabshidden]="hiddenAnimationFinished()">
+
+    <ion-tab-bar [slot]="tabsPlacement() === 'side' ? 'top' : 'bottom'" class="mainmenu-tabs"
+        [class.slide-in-bottom-animation]="visibility() === 'visible'" [class.slide-out-bottom-animation]="visibility() === 'hidden'">
+        <core-loading [hideUntil]="loaded()" [placeholderType]="tabsPlacement() === 'bottom' ? 'rowwrap' : 'column'"
+            [placeholderLimit]="loadingTabsLength" />
+
+        @if (loaded() && tabsPlacement() === 'side') {
+            <core-user-menu-button [alwaysShow]="true" />
+        }
+
+        @for (tab of tabs; track tab.page) {
+            <ion-tab-button (keydown)="tabAction.keyDown(tab.page, $event)" (keyup)="tabAction.keyUp(tab.page, $event)"
+                [hidden]="!loaded() && tab.hide" [tab]="tab.page" [disabled]="tab.hide" layout="label-hide" class="{{tab.class}}"
+                [selected]="tab.page === selectedTab" [tabindex]="selectedTab === tab.page ? 0 : -1" [attr.aria-controls]="tab.id">
+                <ion-icon class="core-tab-icon" [name]="tab.icon" aria-hidden="true" />
+                <ion-label aria-hidden="true">{{ tab.title | translate }}</ion-label>
+                @if (tab.badge) {
+                    <ion-badge class="core-tab-badge" aria-hidden="true">{{ tab.badge }}</ion-badge>
+                }
+                <span class="sr-only">{{ tab.title | translate }}</span>
+                @if (tab.badge && tab.badgeA11yText) {
+                    <span class="sr-only">
+                        {{ tab.badgeA11yText | translate: {$a : tab.badge } }}
+                    </span>
+                }
+            </ion-tab-button>
+        }
+
+    </ion-tab-bar>
+</ion-tabs>
+<div class="core-network-message" [hidden]="!showTabs">
+    <div class="core-online-message">
+        {{ "core.youreonline" | translate }}
+    </div>
+    <div class="core-offline-message">
+        {{ "core.youreoffline" | translate }}
+    </div>
+</div>

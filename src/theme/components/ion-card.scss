@@ -1,0 +1,80 @@
+ion-card {
+    --border-width: var(--ion-card-border-width);
+    --border-style: solid;
+    --border-color: var(--ion-card-border-color);
+    --box-shadow: none;
+    --border-radius: var(--ion-card-radius);
+
+    box-shadow: var(--box-shadow);
+    margin: var(--ion-card-vertical-margin) var(--ion-card-horizontal-margin);
+    border-width: var(--border-width);
+    border-style: var(--border-style);
+    border-color: var(--border-color);
+    border-radius: var(--border-radius);
+
+    &::part(native) {
+        --border-width: 0;
+
+        @include core-focus-over();
+    }
+
+    ion-item:only-child {
+        --inner-border-width: 0px;
+    }
+
+    ion-card-title {
+        font: var(--mdl-typography-heading4-font);
+    }
+
+    // Coloured cards.
+    @each $color-name, $unused in $colors {
+        &.core-#{$color-name}-card {
+            --color-tint: var(--ion-color-#{$color-name}-tint);
+            --color-shade: var(--ion-color-#{$color-name}-shade);
+            --border-width: 0;
+
+            --card-color: var(--color-tint);
+            --card-background: var(--color-shade);
+
+            --border-color: var(--card-color);
+            --border-radius: var(--mdl-shape-borderRadius-sm);
+            --background: var(--card-color);
+            --color: var(--card-background);
+
+            ion-item.item {
+                --background: var(--card-color);
+                --color: var(--card-background);
+                --inner-border-width: 0px;
+                --border-width: 0px;
+                font-size: var(--text-size);
+
+                &.item-label > ion-label,
+                &.item-label > ion-label > p {
+                    --color: var(--card-background);
+                }
+
+                > ion-icon[slot] {
+                    color: var(--card-background);
+                    @include margin-horizontal(null, 16px);
+                }
+            }
+
+            ion-label {
+                white-space: normal !important;
+            }
+        }
+    }
+
+}
+
+
+:root.dark ion-card {
+    // Coloured cards.
+    @each $color-name, $unused in $colors {
+        &.core-#{$color-name}-card {
+            --card-color: var(--color-shade);
+            --card-background: var(--color-tint);
+        }
+    }
+
+}

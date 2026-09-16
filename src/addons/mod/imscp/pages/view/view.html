@@ -1,0 +1,39 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>
+                <core-format-text [text]="title" contextLevel="module" [contextInstanceId]="cmId" [courseId]="courseId" />
+            </h1>
+        </ion-title>
+
+        <ion-buttons slot="end">
+            @if (loaded) {
+                <ion-button (click)="showToc()" aria-haspopup="true" [ariaLabel]="'addon.mod_imscp.toc' | translate">
+                    <ion-icon name="fas-list-ul" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+            }
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <!-- Content. -->
+    <core-loading [hideUntil]="loaded">
+
+        @if (warning) {
+            <core-alert-card type="warning">
+                <span [innerHTML]="warning"></span>
+            </core-alert-card>
+        }
+
+        @if (loaded) {
+            <core-iframe [src]="src" [showFullscreenOnToolbar]="true" [autoFullscreenOnRotate]="true" />
+        }
+    </core-loading>
+
+    @if (loaded && navigationItems.length > 1) {
+        <core-navigation-bar collapsible-footer appearOnBottom [items]="navigationItems" (action)="loadItem($event)" />
+    }
+</ion-content>

@@ -1,0 +1,45 @@
+@use "src/theme/globals" as *;
+
+:host {
+    --image-size: 80px;
+    --icon-color: var(--core-empty-box-icon-color);
+
+    &.core-empty-box-clickable {
+        z-index: 0;
+    }
+
+    &.dimmed {
+        --text-color: var(--gray-700);
+    }
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    color: var(--text-color);
+    margin: 0 auto;
+    text-align: center;
+    padding: 16px;
+    height: 100%;
+
+    ion-icon {
+        font-size: var(--image-size);
+        color: var(--icon-color);
+    }
+    img {
+        height: var(--image-size);
+    }
+
+    p,
+    ::ng-deep p {
+        font-size: var(--mdl-typography-heading6-fontSize);
+        color: var(--text-color);
+    }
+}
+
+:host-context(:root.dark) {
+    &.dimmed {
+        --text-color: var(--gray-300);
+    }
+}

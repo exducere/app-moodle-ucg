@@ -1,0 +1,21 @@
+@use "src/theme/globals" as *;
+
+:host {
+    .item {
+        ion-radio {
+            @include margin-horizontal(null, 8px);
+        }
+
+        &.addon-calendar-event > ion-icon {
+            --margin-vertical: 8px;
+            --margin-end: 8px;
+            padding: 8px;
+            font-size: var(--mdl-typography-icon-fontSize-sm);
+        }
+    }
+
+    ion-item.item.item-lines-default:last-child {
+        --inner-border-width: 0px;
+        --border-width: 0px;
+    }
+}

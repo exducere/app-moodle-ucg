@@ -1,0 +1,106 @@
+<!-- Buttons to add to the header. -->
+<core-navbar-buttons slot="end">
+    <!-- Select subwiki. -->
+    @if (subwikiData.count > 1) {
+        <ion-button fill="clear" (click)="showSubwikiPicker($event)" [ariaLabel]="'addon.mod_wiki.subwiki' | translate"
+            aria-haspopup="true">
+            @if (!groupWiki) {
+                <ion-icon name="fas-user" aria-hidden="true" />
+            } @else {
+                <ion-icon name="fas-users" aria-hidden="true" />
+            }
+        </ion-button>
+    }
+
+    @if (!showLoading && currentPageObj) {
+        <ion-button fill="clear" (click)="openMap()" [ariaLabel]="'addon.mod_wiki.map' | translate" aria-haspopup="true">
+            <ion-icon name="fas-map" aria-hidden="true" />
+        </ion-button>
+    }
+
+    <core-context-menu>
+        @if (canEdit) {
+            @if (isOnline() || pageIsOffline) {
+                <core-context-menu-item [priority]="590" [content]="'core.edit' | translate" iconAction="fas-pen"
+                    (action)="goToEditPage()" />
+            }
+            <core-context-menu-item [priority]="580" [content]="'addon.mod_wiki.createpage' | translate" iconAction="fas-plus"
+                (action)="goToNewPage()" />
+        }
+
+        @if (courseContentsPage) {
+            <core-context-menu-item [priority]="5000" [content]="'core.info' | translate" (action)="openModuleSummary()"
+                iconAction="ucg-information-diamond" />
+        }
+    </core-context-menu>
+
+    @if (!courseContentsPage) {
+        <ion-button fill="clear" (click)="openModuleSummary()" aria-haspopup="true" [ariaLabel]="'core.info' | translate">
+            <ion-icon name="ucg-information-diamond" slot="icon-only" aria-hidden="true" />
+        </ion-button>
+    }
+</core-navbar-buttons>
+
+<!-- Content. -->
+<core-loading [hideUntil]="!showLoading">
+
+    <!-- Activity info. -->
+    @if (isMainPage) {
+        <core-course-module-info [module]="module" [description]="description" [component]="component" [componentId]="componentId"
+            [courseId]="courseId" (completionChanged)="onCompletionChange()" />
+    }
+
+    @if (pageIsOffline || hasOffline || pageWarning) {
+        <div>
+            @if (pageIsOffline || hasOffline) {
+                <!-- Wiki has something offline. -->
+                <core-alert-card type="warning" [message]="pageIsOffline
+                    ? ('core.hasdatatosync' | translate:{$a: pageStr})
+                    : ('core.hasdatatosync' | translate:{$a: moduleName})" />
+            }
+
+            @if (pageWarning) {
+                <!-- Page warning. -->
+                <core-alert-card type="warning" [message]="pageWarning" />
+            }
+        </div>
+    }
+    @if (!showLoading) {
+        <div class="ion-padding-horizontal addon-mod_wiki-page-content">
+            @if (pageTitle) {
+                <h2>
+                    <core-format-text [component]="component" [componentId]="componentId" [text]="pageTitle" contextLevel="module"
+                        [contextInstanceId]="module.id" [courseId]="courseId" [sanitize]="pageIsOffline" />
+                </h2>
+            }
+            <article [class.addon-mod_wiki-noedit]="!canEdit">
+                @if (pageContent) {
+                    <core-format-text [component]="component" [componentId]="componentId" [text]="pageContent" contextLevel="module"
+                        [contextInstanceId]="module.id" [courseId]="courseId" [sanitize]="pageIsOffline" />
+                } @else {
+                    <core-empty-box icon="fas-file-lines" [message]="'addon.mod_wiki.nocontent' | translate" />
+                }
+            </article>
+
+            @if (tagsEnabled && tags.length > 0) {
+                <div class="ion-margin-top">
+                    <strong>{{ 'core.tag.tags' | translate }}:</strong>
+                    <core-tag-list [tags]="tags" />
+                </div>
+            }
+        </div>
+    }
+</core-loading>
+
+@if (isMainPage) {
+    <core-course-module-navigation collapsible-footer [hidden]="showLoading" [courseId]="courseId" [currentModuleId]="module.id" />
+}
+
+@if (canEdit) {
+    <ion-fab slot="fixed" core-fab vertical="bottom" horizontal="end">
+        <ion-fab-button (click)="goToNewPage()" [attr.aria-label]="'addon.mod_wiki.createpage' | translate">
+            <ion-icon name="fas-plus" aria-hidden="true" />
+            <span class="sr-only">{{ 'addon.mod_wiki.createpage' | translate }}</span>
+        </ion-fab-button>
+    </ion-fab>
+}

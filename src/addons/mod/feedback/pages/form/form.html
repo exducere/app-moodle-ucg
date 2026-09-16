@@ -1,0 +1,218 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>
+                <core-format-text [text]="title" contextLevel="module" [contextInstanceId]="cmId" [courseId]="courseId" />
+            </h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content class="limited-width">
+    <core-loading [hideUntil]="feedbackLoaded" class="has-spacer">
+        @if (items && items.length) {
+
+            <ion-list class="ion-no-margin has-spacer">
+                <ion-item class="ion-text-wrap">
+                    <ion-label>
+                        <p class="item-heading">{{ 'addon.mod_feedback.mode' | translate }}</p>
+                        @if (access!.isanonymous) {
+                            <p>{{ 'addon.mod_feedback.anonymous' | translate }}</p>
+                        }
+                        @if (!access!.isanonymous) {
+                            <p>{{ 'addon.mod_feedback.non_anonymous' | translate }}</p>
+                        }
+                    </ion-label>
+                </ion-item>
+                <ng-container *ngFor="let item of items">
+                    @if (item.typ === 'pagebreak') {
+                        <core-spacer />
+                    } @else {
+                        <ion-item class="ion-text-wrap addon-mod_feedback-item" [class.feedback_is_dependent]="item.dependitem > 0"
+                            [class.core-danger-item]="item.isEmpty || item.hasError">
+                            @if (!item.slottedLabel) {
+                                <ion-label>
+                                    <ng-container *ngTemplateOutlet="label; context: {item: item}" />
+                                    @if (item.templateName === 'label') {
+                                        <p>
+                                            <core-format-text [component]="component" [componentId]="cmId" [text]="item.presentation"
+                                                contextLevel="module" [contextInstanceId]="cmId" [wsNotFiltered]="true"
+                                                [courseId]="courseId" />
+                                        </p>
+                                    }
+                                </ion-label>
+                            }
+
+                            @switch (item.templateName) {
+                                @case ('textfield') {
+                                    <ion-input labelPlacement="stacked" type="text" [(ngModel)]="item.value" autocorrect="off"
+                                        name="{{item.typ}}_{{item.id}}" maxlength="{{item.length}}" [required]="item.required">
+                                        <ng-container *ngTemplateOutlet="label; context: {item: item}" />
+                                    </ion-input>
+                                }
+
+                                @case ('numeric') {
+                                    <ion-input labelPlacement="stacked" type="number" [(ngModel)]="item.value"
+                                        name="{{item.typ}}_{{item.id}}" [required]="item.required">
+                                        <ng-container *ngTemplateOutlet="label; context: {item: item}" />
+                                    </ion-input>
+                                    @if (item.hasError) {
+                                        <ion-text color="danger" class="addon-mod_feedback-item-error">
+                                            {{ 'addon.mod_feedback.numberoutofrange' | translate }} [ {{item.rangefrom}}
+                                            @if (item.rangefrom && item.rangeto) {
+                                                <span>, </span>
+                                            }
+                                            {{item.rangeto}} ]
+                                        </ion-text>
+                                    }
+                                }
+
+                                @case ('textarea') {
+                                    <ion-textarea labelPlacement="stacked" [required]="item.required" name="{{item.typ}}_{{item.id}}"
+                                        [(ngModel)]="item.value">
+                                        <ng-container *ngTemplateOutlet="label; context: {item: item}" />
+                                    </ion-textarea>
+                                }
+
+                                @case ('multichoice-d') {
+                                    <ion-select labelPlacement="stacked" [required]="item.required" name="{{item.typ}}_{{item.id}}"
+                                        [(ngModel)]="item.value" interface="action-sheet" [cancelText]="'core.cancel' | translate"
+                                        [interfaceOptions]="{header: item.cleanedName}">
+                                        <ng-container *ngTemplateOutlet="label; context: {item: item}" />
+                                        <ion-select-option *ngFor="let option of item.choices" [value]="option.value">
+                                            <core-format-text [component]="component" [componentId]="cmId" [text]="option.label"
+                                                contextLevel="module" [contextInstanceId]="cmId" [wsNotFiltered]="true"
+                                                [courseId]="courseId" />
+                                        </ion-select-option>
+                                    </ion-select>
+                                }
+                            }
+                        </ion-item>
+
+                        @switch (item.templateName) {
+                            @case ('multichoice-r') {
+                                <ion-radio-group [(ngModel)]="item.value" [required]="item.required" name="{{item.typ}}_{{item.id}}">
+                                    <ion-item *ngFor="let option of item.choices" class="ion-text-wrap">
+                                        <ion-radio [value]="option.value">
+                                            <core-format-text [component]="component" [componentId]="cmId" [text]="option.label"
+                                                contextLevel="module" [contextInstanceId]="cmId" [wsNotFiltered]="true"
+                                                [courseId]="courseId" />
+                                        </ion-radio>
+                                    </ion-item>
+                                </ion-radio-group>
+                            }
+
+                            @case ('multichoice-c') {
+
+                                <ion-item *ngFor="let option of item.choices">
+                                    <ion-checkbox [required]="item.required" name="{{item.typ}}_{{item.id}}" [(ngModel)]="option.checked"
+                                        value="option.value">
+                                        <core-format-text [component]="component" [componentId]="cmId" [text]="option.label"
+                                            contextLevel="module" [contextInstanceId]="cmId" [wsNotFiltered]="true" [courseId]="courseId" />
+                                    </ion-checkbox>
+                                </ion-item>
+
+                            }
+
+                            @case ('captcha') {
+                                @if (!preview) {
+                                    @if (!offline()) {
+                                        <core-recaptcha [publicKey]="item.captcha.recaptchapublickey" [model]="item"
+                                            modelValueName="value" />
+                                    }
+                                    @if (!item.captcha || offline()) {
+                                        <core-alert-card type="warning"
+                                            [message]="'addon.mod_feedback.captchaofflinewarning' | translate" />
+                                    }
+                                }
+                            }
+                        }
+                    }
+                </ng-container>
+
+                @if (!preview) {
+                    <ion-row class="ion-align-items-center spacer-top">
+                        @if (hasPrevPage) {
+                            <ion-col>
+                                <ion-button expand="block" fill="outline" (click)="gotoPage(true)" class="ion-text-wrap">
+                                    <ion-icon name="fas-chevron-left" slot="start" aria-hidden="true" />
+                                    {{ 'core.previous' | translate }}
+                                </ion-button>
+                            </ion-col>
+                        }
+                        @if (hasNextPage) {
+                            <ion-col>
+                                <ion-button expand="block" (click)="gotoPage(false)" class="ion-text-wrap">
+                                    {{ 'core.next' | translate }}
+                                    <ion-icon name="fas-chevron-right" slot="end" aria-hidden="true" />
+                                </ion-button>
+                            </ion-col>
+                        } @else {
+                            <ion-col>
+                                <ion-button expand="block" (click)="gotoPage(false)" class="ion-text-wrap">
+                                    {{ 'core.submit' | translate }}
+                                </ion-button>
+                            </ion-col>
+                        }
+                    </ion-row>
+                }
+            </ion-list>
+
+        }
+
+        @if (completed) {
+            <core-alert-card type="success">
+                @if (!completionPageContents && !completedOffline) {
+                    <p>
+                        {{ 'addon.mod_feedback.this_feedback_is_already_submitted' | translate }}
+                    </p>
+                } @else if (!completionPageContents && completedOffline) {
+                    <p>
+                        {{ 'addon.mod_feedback.feedback_submitted_offline' | translate }}
+                    </p>
+                } @else {
+                    <core-format-text [component]="component" componentId="componentId" [text]="completionPageContents"
+                        contextLevel="module" [contextInstanceId]="cmId" [courseId]="courseId" />
+                }
+            </core-alert-card>
+        }
+
+        @if (feedbackLoaded && completed) {
+            <div collapsible-footer slot="fixed" appearOnBottom>
+                <div class="list-item-limited-width adaptable-buttons-row">
+                    @if (access!.canviewanalysis) {
+                        <ion-button expand="block" fill="outline" (click)="showAnalysis()" class="ion-text-wrap ion-margin">
+                            <ion-icon name="fas-chart-bar" slot="start" aria-hidden="true" />
+                            {{ 'addon.mod_feedback.completed_feedbacks' | translate }}
+                        </ion-button>
+                    }
+                    <ion-button expand="block" (click)="continue()" class="ion-text-wrap ion-margin">
+                        @if (!siteAfterSubmit) {
+                            {{ 'core.continue' | translate }}
+                        } @else {
+                            {{ 'core.course.nextactivity' | translate }}
+                        }
+                    </ion-button>
+                </div>
+            </div>
+        }
+    </core-loading>
+</ion-content>
+
+
+<ng-template #label let-item="item">
+    @if (item.name) {
+        <p class="ion-text-wrap" [core-mark-required]="item.required" [attr.slot]="item.slottedLabel ? 'label' : undefined">
+            @if (feedback!.autonumbering && item.itemnumber) {
+                <span>{{item.itemnumber}}. </span>
+            }
+            <core-format-text [component]="component" [componentId]="cmId" [text]="item.name" contextLevel="module"
+                [contextInstanceId]="cmId" [courseId]="courseId" [wsNotFiltered]="true" />
+            @if (item.postfix) {
+                <span class="addon-mod_feedback-postfix">{{item.postfix}}</span>
+            }
+        </p>
+    }
+</ng-template>

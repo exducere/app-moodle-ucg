@@ -1,0 +1,32 @@
+ion-item.item-label-stacked ion-datetime-button {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    align-self: self-end;
+}
+
+ion-datetime-button p {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+ion-datetime.datetime-disabled {
+    opacity: var(--mdl-input-disabled-opacity) !important;
+}
+
+ion-datetime {
+    .ion-datetime-date-title {
+        display: inline;
+    }
+    .ion-datetime-time-title {
+        display: none;
+    }
+}
+
+ion-datetime.datetime-presentation-time {
+    .ion-datetime-date-title {
+        display: none;
+    }
+    .ion-datetime-time-title {
+        display: inline;
+    }
+}

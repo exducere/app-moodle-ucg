@@ -1,0 +1,454 @@
+/** Format Text - Show more styles. */
+/** Styles of elements inside the directive should be placed in format-text.scss */
+@use "../globals.variables" as global;
+@use "sass:math";
+
+core-format-text {
+    --core-format-text-background: var(--background, var(--ion-item-background));
+    --core-format-text-viewer-icon-background: rgb(255 255 255 / 50%);
+}
+
+:root.dark core-format-text {
+    --core-format-text-viewer-icon-background: rgb(0 0 0 / 50%);
+}
+
+core-format-text {
+    display: contents;
+    user-select: text;
+    word-break: break-word;
+    word-wrap: break-word;
+    cursor: auto;
+
+    @include core-transition(background-color color, 200ms);
+    &.core-loading {
+        width: 100%;
+        &:empty:before {
+            content: 'E'; // Set a minimum empty text to have a minimum height of one line.
+            opacity: 0;
+        }
+    }
+
+    &.collapsible-item {
+        display: block;
+        // This is to allow clicks in radio/checkbox content.
+        cursor: pointer;
+        pointer-events: auto;
+
+        &.collapsible-enabled {
+            display: block;
+            max-height: none;
+
+            &.collapsible-collapsed {
+                overflow: hidden;
+            }
+        }
+
+        @if (global.$core-format-text-never-shorten) {
+            &.collapsible-enabled {
+                --display-toggle: none !important;
+                --collapsible-height: auto !important;
+
+                .collapsible-toggle {
+                    display: none !important;
+                }
+
+                &:before {
+                    display: none !important;
+                }
+            }
+        }
+    }
+    &.collapsible-item.inline {
+        display: inline-block;
+        &.collapsible-enabled {
+           display: inline-block;
+        }
+    }
+
+    .core-adapted-img-container {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+
+        button.core-image-viewer-icon {
+            position: absolute;
+            color: var(--ion-text-color);
+            border-radius: var(--mdl-shape-borderRadius-xl);
+            background-color: var(--core-format-text-viewer-icon-background);
+            display: flex;
+
+            width: var(--a11y-sizing-minTargetSize);
+            height: var(--a11y-sizing-minTargetSize);
+            max-width: var(--a11y-sizing-minTargetSize);
+            font-size: var(--mdl-typography-icon-fontSize-lg);
+            @include position(null, 10px, 10px, null);
+
+            ion-icon {
+                flex: 1;
+                align-self: center;
+                /** Fix iOS icon size */
+                margin: 0 auto;
+                position: absolute;
+                left: 0;
+                right: 0;
+            }
+
+            &:hover {
+                opacity: .7;
+            }
+
+            &.hidden {
+                display: none;
+            }
+        }
+    }
+
+    .filter_mathjaxloader_equation mjx-container,
+    .filter_mathjaxloader_equation mjx-container[jax="CHTML"] { // Increase specificity.
+        overflow-x: auto;
+        margin: 0;
+        padding: 10px 0;
+
+        // Disable clicks in links inside MathJax equations.
+        a {
+            pointer-events: none;
+        }
+
+        mjx-assistive-mml {
+            @include sr-only();
+        }
+    }
+
+}
+
+@keyframes loading {
+    0% {
+        left: -45%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+
+/** Styles to match web platform */
+
+// Those styles are omitted on RTE
+core-format-text {
+    ul {
+        padding-left: 1rem;
+        -webkit-margin-start: .2rem;
+    }
+
+    .atto_image_button_text-top,
+    .atto_image_button_middle,
+    .atto_image_button_text-bottom,
+    .atto_image_button_left,
+    .atto_image_button_right {
+        height: auto;
+        width: auto;
+
+        &.img-responsive {
+            height: auto;
+            width: auto;
+        }
+    }
+
+    // Embed video responsive classes.
+    // Taken from https://github.com/twbs/bootstrap/blob/v4-dev/scss/utilities/_embed.scss
+    .embed-responsive {
+        position: relative;
+        display: block;
+        width: 100%;
+        padding: 0;
+        overflow: hidden;
+
+        &::before {
+            display: block;
+            content: "";
+        }
+
+        .embed-responsive-item,
+        iframe,
+        embed,
+        object,
+        video {
+            position: absolute;
+            @include position(0, null, 0, 0);
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        iframe iframe {
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .embed-responsive-21by9 {
+        &::before {
+            padding-top: math.percentage(math.div(9, 21));
+        }
+    }
+
+    .embed-responsive-16by9 {
+        &::before {
+            padding-top: math.percentage(math.div(9, 16));
+        }
+    }
+
+    .embed-responsive-4by3 {
+        &::before {
+            padding-top: math.percentage(math.div(3, 4));
+        }
+    }
+
+    .embed-responsive-1by1 {
+        &::before {
+            padding-top: math.percentage(1);
+        }
+    }
+
+}
+
+core-format-text,
+.item core-format-text,
+core-rich-text-editor .core-rte-editor {
+    @import "bootstrap/bootstrap";
+    @import "moodle/moodle";
+
+    @include core-headings();
+
+    p, ul, ol, li {
+        // Normalize font-size inside formatted text.
+        font-size: var(--text-size);
+    }
+
+    p {
+        margin-bottom: 1rem;
+        margin-block-start: 0;
+    }
+
+    > p:only-child {
+        margin-bottom: 0;
+    }
+
+    hr {
+        border-top: 1px solid var(--stroke);
+    }
+
+    .no-overflow {
+        overflow: auto;
+    }
+
+    // Fix lists styles in core-format-text.
+    ol {
+        list-style-type: decimal;
+    }
+
+    ul, ol {
+        ol {
+            list-style-type: lower-latin;
+        }
+        ul, ol {
+            @include margin(null, null, null, 15px);
+        }
+    }
+
+    sub, sup {
+        overflow: visible !important;
+    }
+
+    .badge {
+        position: initial !important;
+    }
+
+    .core-disable-media-adapt,
+    .core-disable-media-adapt .core-media-adapt-width {
+        max-width: none !important;
+        max-height: none !important;
+        width: initial !important;
+        height: initial !important;
+        display: inline-block !important;
+    }
+
+    img.icon {
+        font-size: var(--mdl-typography-icon-fontSize-sm);
+        width: var(--mdl-typography-icon-fontSize-sm);
+        height: var(--mdl-typography-icon-fontSize-sm);
+        margin: 0;
+        padding: 0;
+        -webkit-box-sizing: content-box;
+        box-sizing: content-box;
+        margin-right: .5rem;
+    }
+
+    // Form controls
+    // ------------------------
+    select,
+    input:not([type=checkbox]):not([type=radio]):not([type=hidden]) {
+        height: 30px;
+        display: inline-block;
+        border: 1px solid var(--gray-500);
+        background: var(--contrast-background);
+        padding: 6px 8px;
+        border-radius: var(--mdl-shape-borderRadius-xs);
+        margin-left: 2px;
+        margin-right: 2px;
+        margin-bottom: 10px;
+    }
+
+    select {
+        background-color: var(--contrast-background);
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+        background-repeat: no-repeat, repeat;
+        background-position: right .7em top 50%, 0 0;
+        background-size: .65em auto, 100%;
+        padding-right: 24px;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    --input-size: var(--size, 20px);
+    input[type=radio],
+    input[type=checkbox] {
+        position: relative !important;
+
+        --color: var(--text-color);
+        --color-checked: var(--color);
+
+        width: var(--input-size);
+        height: var(--input-size);
+        border-radius: var(--border-radius);
+        border-width: var(--outer-border-width);
+        border-style: var(--border-style);
+        border-color: var(--color);
+        appearance: none;
+        display: inline-block;
+        margin-left: 2px;
+        margin-right: 2px;
+        margin-top: 2px;
+
+        &:checked {
+            background-color: var(--color-checked);
+        }
+
+        & + label {
+            line-height: var(--input-size);
+            margin-top: 2px;
+            margin-bottom: 2px;
+        }
+    }
+
+    input[type=radio]::after {
+        position: absolute;
+        content: ' ';
+        width: calc(50% + var(--outer-border-width));
+        height: calc(50% + var(--outer-border-width));
+        border-radius: var(--border-radius);
+        transform: scale3d(0, 0, 0) translate(-50%,-50%);
+        background: var(--contrast-background);
+        border: 0 !important;
+        top: 50%;
+        left: 50%;
+    }
+
+    input[type=radio]:checked::after {
+        transform: scale3d(1, 1, 1) translate(-50%,-50%);
+    }
+
+    input[type=checkbox]:checked::after {
+        position: absolute;
+        width: 33%;
+        height: 50%;
+        content: ' ';
+        transform: rotate(45deg);
+        border-width: 0px 2px 2px 0px;
+        border-style: solid;
+        border-color: var(--contrast-background);
+        left: 4px;
+        top: 2px;
+    }
+
+    .form-check-inline .form-check-input {
+        flex-shrink: 0;
+    }
+
+    a {
+        color: var(--core-link-color);
+        text-decoration: var(--core-link-decoration, underline);
+    }
+
+}
+
+// h1 is too big and ugly, reduce size when loading.
+ion-header.ios h1 core-format-text {
+    &.core-loading {
+        max-height: 30px;
+        margin-top: 10px;
+    }
+}
+
+:root.dark core-format-text select,
+:root.dark core-rich-text-editor .core-rte-editor select {
+	background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+}
+
+
+:root.plt-ios core-format-text,
+:root.plt-ios .item core-format-text {
+    .mobileapp-ios-d-none {
+        display: none !important;
+    }
+    .mobileapp-ios-d-block {
+        display: block !important;
+    }
+    .mobileapp-ios-d-inline {
+        display: inline !important;
+    }
+    .mobileapp-ios-d-inline-block {
+        display: inline-block !important;
+    }
+    .mobileapp-ios-d-flex {
+        display: flex !important;
+    }
+}
+
+:root.plt-android core-format-text,
+:root.plt-android .item core-format-text {
+    .mobileapp-android-d-none {
+        display: none !important;
+    }
+    .mobileapp-android-d-block {
+        display: block !important;
+    }
+    .mobileapp-android-d-inline {
+        display: inline !important;
+    }
+    .mobileapp-android-d-inline-block {
+        display: inline-block !important;
+    }
+    .mobileapp-android-d-flex {
+        display: flex !important;
+    }
+}
+
+:root core-format-text,
+:root .item core-format-text {
+    .mobileapp-d-none {
+        display: none !important;
+    }
+    .mobileapp-d-block {
+        display: block !important;
+    }
+    .mobileapp-d-inline {
+        display: inline !important;
+    }
+    .mobileapp-d-inline-block {
+        display: inline-block !important;
+    }
+    .mobileapp-d-flex {
+        display: flex !important;
+    }
+}

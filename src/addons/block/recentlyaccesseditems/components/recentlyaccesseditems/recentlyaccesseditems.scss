@@ -1,0 +1,101 @@
+@use "src/theme/globals" as *;
+
+:host {
+    .ion-text-wrap ion-label p {
+        @include ellipsis();
+    }
+
+    .core-course-module-handler {
+        --inner-border-width: 0px;
+    }
+}
+
+.recently-accessed-list--horizontal {
+    display: grid;
+    overflow-x: auto;
+    grid-auto-columns: minmax(260px, 82%);
+    grid-auto-flow: column;
+    gap: 12px;
+    padding: 4px 16px 14px;
+    overscroll-behavior-inline: contain;
+    scroll-padding-inline: 16px;
+    scroll-snap-type: inline proximity;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    .recently-accessed-card {
+        width: auto;
+        margin: 0;
+        border: 1px solid var(--stroke);
+        border-radius: 18px;
+        background: var(--ion-item-background);
+        box-shadow: 0 4px 14px rgb(0 0 0 / 5%);
+        scroll-snap-align: start;
+    }
+
+    .core-course-module-handler {
+        --background: transparent;
+        --background-activated: rgba(var(--ion-color-primary-rgb), 0.09);
+        --background-hover: rgba(var(--ion-color-primary-rgb), 0.05);
+        --border-radius: 18px;
+        --inner-padding-end: 16px;
+        --min-height: 90px;
+        --padding-start: 16px;
+
+        core-mod-icon {
+            margin-inline-end: 14px;
+        }
+
+        ion-label {
+            margin: 14px 0;
+        }
+
+        .item-heading {
+            margin-bottom: 4px;
+            color: var(--text-color);
+            font-size: #{dynamic-font(14px)};
+            font-weight: 700;
+        }
+
+        ion-label > p:last-child {
+            color: var(--subdued-text-color);
+            font-size: #{dynamic-font(12px)};
+        }
+    }
+
+    core-empty-box {
+        width: min(100%, 360px);
+    }
+}
+
+.recently-accessed-divider--horizontal {
+    --background: transparent;
+    --color: var(--text-color);
+    --padding-start: 16px;
+    border: 0;
+
+    h2 {
+        margin: 0;
+        font-size: #{dynamic-font(18px)};
+        font-weight: 800;
+        letter-spacing: -0.025em;
+    }
+}
+
+@media (min-width: 768px) {
+    .recently-accessed-list--horizontal {
+        grid-auto-columns: 300px;
+    }
+}
+
+@media (max-width: 380px) {
+    .recently-accessed-list--horizontal {
+        grid-auto-columns: minmax(240px, 88%);
+        gap: 10px;
+        padding-inline: 12px;
+        scroll-padding-inline: 12px;
+    }
+}

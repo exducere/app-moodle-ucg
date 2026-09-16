@@ -1,0 +1,135 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>
+                @if (h5pActivity) {
+                    <core-format-text [text]="h5pActivity.name" contextLevel="module" [contextInstanceId]="h5pActivity.coursemodule"
+                        [courseId]="courseId" />
+                }
+            </h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content class="limited-width">
+    <ion-refresher slot="fixed" [disabled]="!loaded" (ionRefresh)="doRefresh($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="loaded">
+        @if (attempt) {
+            <!-- Attempt number. -->
+            <h2 class="ion-margin">
+                {{ 'addon.mod_h5pactivity.attempt' | translate }} {{attempt.attempt}}
+            </h2>
+
+            <!-- User viewed. -->
+            @if (user) {
+                <ion-card>
+                    <ion-item core-user-link [userId]="user.id" [courseId]="courseId" button [detail]="true">
+                        <core-user-avatar [user]="user" slot="start" [courseId]="courseId" [linkProfile]="false" />
+                        <ion-label>{{ user.fullname }}</ion-label>
+                    </ion-item>
+                </ion-card>
+            }
+
+            <!-- Attempt summary. -->
+            <ion-card>
+                <ion-card-content>
+                    <addon-mod-h5pactivity-attempt-summary [attempt]="attempt" />
+                </ion-card-content>
+            </ion-card>
+
+            <!-- Results. -->
+            @for (result of attempt.results; track result.id) {
+                <ion-card>
+                    <ion-card-header>
+                        <ion-card-title aria-level="3">
+                            <core-format-text [text]="result.description" [component]="component" [componentId]="cmId" contextLevel="module"
+                                [contextInstanceId]="cmId" [courseId]="courseId" />
+                        </ion-card-title>
+                    </ion-card-header>
+                    <ion-card-content class="ion-no-padding">
+                        @if (result.content) {
+                            <ion-item>
+                                <ion-label>
+                                    <core-format-text [text]="result.content" [component]="component" [componentId]="cmId"
+                                        contextLevel="module" [contextInstanceId]="cmId" [courseId]="courseId" />
+                                </ion-label>
+                            </ion-item>
+                        }
+
+                        <!-- Options. -->
+                        @if (result.options && result.options.length) {
+                            <ion-grid role="grid" class="addon-mod_h5pactivity-result-grid">
+                                <ion-row role="row">
+                                    <ion-col role="columnheader">{{ result.optionslabel }}</ion-col>
+                                    <ion-col role="columnheader" class="ion-text-center">{{ result.correctlabel }}</ion-col>
+                                    <ion-col role="columnheader" class="ion-text-center">{{ result.answerlabel }}</ion-col>
+                                </ion-row>
+
+                                @for (option of result.options; track option.id) {
+                                    <ion-row role="row">
+                                        <ion-col role="gridcell">
+                                            <core-format-text [text]="option.description" [component]="component" [componentId]="cmId"
+                                                contextLevel="module" [contextInstanceId]="cmId" [courseId]="courseId" />
+                                        </ion-col>
+                                        <ion-col role="gridcell" class="ion-justify-content-center ion-text-center">
+                                            @if (option.correctanswer) {
+                                                <ng-container *ngTemplateOutlet="answerTemplate; context: {answer: option.correctanswer}" />
+                                            }
+                                        </ion-col>
+                                        <ion-col role="gridcell" class="ion-justify-content-center ion-text-center">
+                                            @if (option.useranswer) {
+                                                <ng-container *ngTemplateOutlet="answerTemplate; context: {answer: option.useranswer}" />
+                                            }
+                                        </ion-col>
+                                    </ion-row>
+                                }
+                            </ion-grid>
+                        }
+
+                        <!-- Result score. -->
+                        @if (result.maxscore && result.track) {
+                            <p class="addon-mod_h5pactivity-result-score">
+                                {{ 'addon.mod_h5pactivity.score' | translate }}:
+                                {{ 'addon.mod_h5pactivity.score_out_of' | translate:{$a: result} }}
+                            </p>
+                        }
+
+
+                        <!-- Result doesn't support tracking. -->
+                        @if (!result.track) {
+                            <ion-item class="addon-mod_h5pactivity-result-unsupported">
+                                <ion-icon slot="start" name="fas-triangle-exclamation" aria-hidden="true" />
+                                <ion-label>
+                                    {{ 'addon.mod_h5pactivity.no_compatible_track' | translate:{$a: result.interactiontype} }}
+                                </ion-label>
+                            </ion-item>
+                        }
+                    </ion-card-content>
+                </ion-card>
+            }
+        }
+    </core-loading>
+</ion-content>
+
+<!-- Template to render an answer. -->
+<ng-template #answerTemplate let-answer="answer">
+    @if (answer.correct) {
+        <ion-icon name="fas-check" [attr.aria-label]="'addon.mod_h5pactivity.answer_correct' | translate" color="success" />
+        {{ answer.answer }}
+    } @else if (answer.incorrect) {
+        <ion-icon name="fas-xmark" [attr.aria-label]="'addon.mod_h5pactivity.answer_incorrect' | translate" color="danger" />
+        {{ answer.answer }}
+    } @else if (answer.text) {
+        {{ answer.answer }}
+    } @else if (answer.checked) {
+        <ion-icon name="fas-circle-check" [attr.aria-label]="'addon.mod_h5pactivity.answer_checked' | translate" />
+    } @else if (answer.pass) {
+        <ion-icon name="fas-check" [attr.aria-label]="'addon.mod_h5pactivity.answer_pass' | translate" color="success" />
+    } @else if (answer.fail) {
+        <ion-icon name="fas-xmark" [attr.aria-label]="'addon.mod_h5pactivity.answer_fail' | translate" color="danger" />
+    }
+</ng-template>

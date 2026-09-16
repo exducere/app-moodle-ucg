@@ -1,0 +1,64 @@
+<ion-item-divider [sticky]="true">
+    <ion-label>
+        <h2>{{ 'addon.block_timeline.pluginname' | translate }}</h2>
+    </ion-label>
+</ion-item-divider>
+<core-loading [hideUntil]="loaded" placeholderType="column" placeholderHeight="120px" [placeholderLimit]="1">
+    @if (search() !== null) {
+        <ion-row class="ion-hide-md-up addon-block-timeline-filter">
+            <ion-col>
+                <!-- Filter courses. -->
+                <core-search-box [(searchText)]="search"
+                    [placeholder]="'addon.block_timeline.searchevents' | translate" autocorrect="off" [spellcheck]="false" [lengthCheck]="2"
+                    searchArea="AddonBlockTimeline" />
+            </ion-col>
+        </ion-row>
+    }
+    <ion-row class="ion-justify-content-between ion-align-items-center addon-block-timeline-filter">
+        <ion-col size="auto">
+            <core-combobox [formControl]="filterFormControl" (selectionChange)="filterChanged($event)"
+                [label]="'addon.block_timeline.ariadayfilter' | translate">
+                @for (option of statusFilterOptions; let last = $last; track option.value) {
+                    <ion-select-option class="ion-text-wrap"
+                        [class.core-select-option-border-bottom]="last" [value]="option.value">
+                        {{ option.name | translate }}
+                    </ion-select-option>
+                }
+                <ion-select-option class="ion-text-wrap core-select-option-title" disabled value="disabled">
+                    {{ 'addon.block_timeline.duedate' | translate }}
+                </ion-select-option>
+                @for (option of dateFilterOptions; track option.value) {
+                    <ion-select-option class="ion-text-wrap" [value]="option.value">
+                        {{ option.name | translate }}
+                    </ion-select-option>
+                }
+            </core-combobox>
+        </ion-col>
+        @if (search() !== null) {
+            <ion-col class="ion-hide-md-down">
+                <!-- Filter courses. -->
+                <core-search-box [(searchText)]="search" [placeholder]="'addon.block_timeline.searchevents' | translate" autocorrect="off"
+                    [spellcheck]="false" [lengthCheck]="2" searchArea="AddonBlockTimeline" />
+            </ion-col>
+        }
+        <ion-col size="auto">
+            <core-combobox [label]="'core.sortby' | translate" [formControl]="sortFormControl" (selectionChange)="sortChanged($event)"
+                icon="fas-arrow-down-short-wide" class="no-border">
+                @for (option of sortOptions; track option.value) {
+                    <ion-select-option class="ion-text-wrap" [value]="option.value">
+                        {{ option.name | translate }}
+                    </ion-select-option>
+                }
+            </core-combobox>
+        </ion-col>
+    </ion-row>
+    @for (section of sections(); track section.course?.id || section.dateRange.from) {
+        @if (section) {
+            <addon-block-timeline-events [events]="section.events()" [showInlineCourse]="sort() === AddonBlockTimelineSort.ByDates"
+                [canLoadMore]="section.canLoadMore()" [loadingMore]="section.loadingMore()" (loadMore)="section.loadMore()"
+                [course]="section.course" />
+        }
+    } @empty {
+        <core-empty-box image="assets/img/icons/courses.svg" [message]="'addon.block_timeline.noevents' | translate" />
+    }
+</core-loading>

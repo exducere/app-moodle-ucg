@@ -1,0 +1,109 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1 core-page-title>{{ 'addon.notifications.notifications' | translate }}</h1>
+        </ion-title>
+        <ion-buttons slot="end">
+            <core-user-menu-button />
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <core-split-view>
+        <ion-refresher slot="fixed" [disabled]="!notifications.loaded" (ionRefresh)="refreshNotifications($event.target)">
+            <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+        </ion-refresher>
+        <core-loading [hideUntil]="notifications.loaded" placeholderType="listwithicon" placeholderHeight="32px" placeholderWidth="32px">
+            @if (!hasNotificationsPermission && !permissionWarningHidden) {
+                <core-alert-card type="warning"
+                    [title]="'core.turnonnotifications' | translate"
+                    [message]="'core.turnonnotificationsmessage' | translate">
+                    <div buttons>
+                        <ion-button fill="clear" (click)="hidePermissionWarning()">
+                            {{ 'core.dontshowagain' | translate | coreNoPeriod }}
+                        </ion-button>
+                        <ion-button fill="outline" (click)="openSettings()">{{ 'core.turnon' | translate }}</ion-button>
+                    </div>
+                </core-alert-card>
+            }
+
+            @for (notification of notifications.items; track notification.id) {
+                <ion-item class="ion-text-wrap addon-notification-item"
+                    [attr.aria-current]="notifications.getItemAriaCurrent(notification)"
+                    (click)="notifications.select(notification)" button [detail]="false" lines="full">
+
+                    @if (notification.useridfrom > 0) {
+                        <core-user-avatar [user]="notification.userFrom" slot="start" [courseId]="notification.courseid">
+                            @if (notification.iconurl) {
+                                <div class="core-avatar-extra-img">
+                                    <img [url]="notification.iconurl" alt="" role="presentation" core-external-content>
+                                </div>
+                            }
+                        </core-user-avatar>
+                    } @else {
+
+                        @if (notification.imgUrl) {
+                            <img class="core-notification-img" [url]="notification.imgUrl" core-external-content alt="" role="presentation"
+                                slot="start">
+                        } @else {
+                            <div class="core-notification-icon" slot="start">
+                                @if (notification.iconurl) {
+                                    <img [url]="notification.iconurl" core-external-content alt="" role="presentation">
+                                } @else {
+                                    <ion-icon name="ucg-notification-03" aria-hidden="true" />
+                                }
+                            </div>
+                        }
+
+                    }
+
+                    <ion-label>
+                        <p class="item-heading"
+                            [class.addon-notification-unread]="!notification.timeread"
+                            [attr.aria-label]="
+                                notification.timeread
+                                ? notification.subject
+                                : 'addon.notifications.unreadnotification' | translate: {$a: notification.subject}">
+                            <core-format-text [text]="notification.subject" contextLevel="system" [contextInstanceId]="0"
+                                [wsNotFiltered]="true" />
+                        </p>
+                        <p>{{ notification.timecreated | coreTimeAgo }}@if (notification.useridfrom > 0) {
+                                · {{
+                                notification.userfromfullname }}
+                            }
+                        </p>
+                    </ion-label>
+                    @if (!notification.timeread) {
+                        <ion-note slot="end">
+                            <ion-icon name="fas-circle" color="primary" aria-hidden="true" />
+                        </ion-note>
+                    }
+                </ion-item>
+            }
+
+            @if (!notifications || notifications.empty) {
+                <core-empty-box icon="far-bell" [message]="'addon.notifications.therearentnotificationsyet' | translate" />
+            }
+            <core-infinite-loading [enabled]="notifications.loaded && !notifications.completed" (action)="fetchMoreNotifications($event)"
+                [error]="fetchMoreNotificationsFailed" />
+        </core-loading>
+
+
+        <div class="mark-all-as-read" slot="fixed" collapsible-footer appearOnBottom>
+            @if (notifications.loaded && canMarkAllNotificationsAsRead) {
+                <ion-chip [disabled]="loadingMarkAllNotificationsAsRead" role="button" color="info" class="clickable fab-chip"
+                    (ariaButtonClick)="markAllNotificationsAsRead()">
+                    @if (!loadingMarkAllNotificationsAsRead) {
+                        <ion-icon name="ucg-eye" aria-hidden="true" />
+                    } @else {
+                        <ion-spinner [attr.aria-label]="'core.loading' | translate" />
+                    }
+                    {{ 'addon.notifications.markallread' | translate }}
+                </ion-chip>
+            }
+        </div>
+    </core-split-view>
+</ion-content>

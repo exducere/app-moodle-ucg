@@ -1,0 +1,25 @@
+<!-- ReCAPTCHA V2 -->
+@if (publicKey && siteUrl && model) {
+    <div>
+        @if (model[modelValueName]) {
+            <ion-item>
+                <ion-label color="success">{{ 'core.answered' | translate }}</ion-label>
+            </ion-item>
+        } @else {
+            <!-- A button to open the recaptcha modal. -->
+            <ion-button expand="block" fill="outline" class="ion-margin" (click)="answerRecaptcha()">
+                {{ 'core.opensecurityquestion' | translate }}
+            </ion-button>
+        }
+
+        @if (expired) {
+            <ion-item class="ion-text-wrap core-input-error">
+                <ion-label color="danger">{{ 'core.login.recaptchaexpired' | translate }}</ion-label>
+            </ion-item>
+        } @else if (showRequiredError && !model[modelValueName]) {
+            <ion-item class="ion-text-wrap core-input-error">
+                <ion-label color="danger">{{ 'core.required' | translate }}</ion-label>
+            </ion-item>
+        }
+    </div>
+}

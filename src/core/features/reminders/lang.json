@@ -1,0 +1,16 @@
+{
+    "atthetime": "At the time of the event",
+    "custom": "Custom...",
+    "customreminder": "Custom reminder",
+    "delete": "Delete reminder",
+    "noreminders": "No reminders scheduled",
+    "reminderset": "Reminder set for {{$a}}",
+    "reminderunset": "Reminder deleted",
+    "scheduledreminders": "Scheduled reminders",
+    "setareminder": "Set a reminder",
+    "setareminderfor": "Set a reminder for \"{{title}}\" ({{label}})",
+    "setreminder": "Set reminder",
+    "timebefore": "{{value}} {{units}} before",
+    "units": "Units",
+    "value": "Value"
+}

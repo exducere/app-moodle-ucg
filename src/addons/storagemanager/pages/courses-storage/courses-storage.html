@@ -1,0 +1,76 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'addon.storagemanager.managedownloads' | translate }}</h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content class="limited-width">
+    <core-loading [hideUntil]="loaded" placeholderType="column" placeholderHeight="84px">
+        @if (spaceUsage) {
+            <div class="ion-padding-horizontal ion-text-wrap">
+                <h2>{{ 'addon.storagemanager.alldata' | translate }}</h2>
+            </div>
+
+            <ion-card>
+                <ion-item class="ion-text-wrap total">
+                    <ion-label>
+                        <p class="item-heading ion-text-wrap">{{ 'addon.storagemanager.totalspaceusage' | translate }}</p>
+                        @if (spaceUsage.spaceUsage) {
+                            <ion-badge color="light">{{ spaceUsage.spaceUsage | coreBytesToSize }}</ion-badge>
+                        }
+                    </ion-label>
+                    <ion-button fill="clear" color="danger" slot="end" (click)="deleteSiteStorage($event)"
+                        [hidden]="spaceUsage.spaceUsage! + spaceUsage.cacheEntries! <= 0"
+                        [attr.aria-label]="'addon.storagemanager.deleteallsitedata' | translate">
+                        <ion-icon name="fas-trash" slot="icon-only" aria-hidden="true" />
+                    </ion-button>
+                </ion-item>
+            </ion-card>
+        }
+
+        <div class="ion-padding-horizontal ion-text-wrap">
+            <h2>{{ 'addon.storagemanager.downloadedcourses' | translate }}</h2>
+        </div>
+        <ion-card>
+            <ion-item class="size courses ion-text-wrap" lines="full">
+                <ion-label>
+                    <p class="item-heading">{{ 'addon.storagemanager.totalspaceusage' | translate }}</p>
+                    <ion-badge color="light">{{ totalSize | coreBytesToSize }}</ion-badge>
+                </ion-label>
+                <ion-button slot="end" (click)="deleteCompletelyDownloadedCourses($event)"
+                    [disabled]="completelyDownloadedCourses.length === 0" color="danger" fill="clear"
+                    [attr.aria-label]="'addon.storagemanager.deletecourses' | translate">
+                    <ion-icon name="fas-trash" slot="icon-only" aria-hidden="true" />
+                </ion-button>
+            </ion-item>
+            @for (course of downloadedCourses; track course.id) {
+                <ion-item class="course" (click)="openCourse(course.id, course.title)" button
+                    [detail]="true">
+                    <ion-label class="ion-text-wrap">
+                        <p class="item-heading">
+                            <core-format-text [text]="course.title" contextLevel="course" [contextInstanceId]="course.id"
+                                [adaptImg]="false" />
+                        </p>
+                        @if (course.isDownloading) {
+                            <p class="item-heading item-heading-secondary">
+                                {{ 'core.downloading' | translate }}
+                            </p>
+                        }
+                        <ion-badge color="light">
+                            {{ course.totalSize | coreBytesToSize }}
+                        </ion-badge>
+                    </ion-label>
+                    <ion-button slot="end" (click)="deleteCourse($event, course)" [disabled]="course.isDownloading" color="danger"
+                        fill="clear" [ariaLabel]="'addon.storagemanager.deletedatafrom' | translate: { name: course.title }">
+                        <ion-icon name="fas-trash" slot="icon-only" aria-hidden="true" />
+                    </ion-button>
+                </ion-item>
+            }
+        </ion-card>
+    </core-loading>
+</ion-content>
+<core-dynamic-component [component]="footerComponent" />

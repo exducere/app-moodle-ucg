@@ -1,0 +1,87 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>
+                {{ 'core.comments.comments' | translate }}
+            </h1>
+            @if (title) {
+                <p class="subheading">
+                    <core-format-text [text]="title" [contextLevel]="contextLevel" [contextInstanceId]="instanceId" [courseId]="courseId" />
+                </p>
+            }
+        </ion-title>
+        <ion-buttons slot="end">
+            @if (canDeleteComments) {
+                <ion-button slot="end" fill="clear" (click)="toggleDelete()" [ariaLabel]="'core.toggledelete' | translate">
+                    @if (!showDelete) {
+                        <ion-icon name="ucg-pen-01" slot="icon-only" aria-hidden="true" />
+                    } @else {
+                        <ion-icon name="fas-check" slot="icon-only" aria-hidden="true" />
+                    }
+                </ion-button>
+            }
+            <core-context-menu>
+                <core-context-menu-item [hidden]="!(commentsLoaded && !hasOffline)" [priority]="100" [content]="'core.refresh' | translate"
+                    (action)="refreshComments(false)" [iconAction]="refreshIcon" [closeOnClick]="true" />
+                <core-context-menu-item [hidden]="!(commentsLoaded && hasOffline && isOnline())" [priority]="100"
+                    [content]="'core.settings.synchronizenow' | translate" (action)="refreshComments(true)" [iconAction]="syncIcon"
+                    [closeOnClick]="false" />
+            </core-context-menu>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!commentsLoaded" (ionRefresh)="refreshComments(false, $event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="commentsLoaded">
+        @if (!comments?.length && !offlineComment) {
+            <core-empty-box icon="ucg-messages-square" [message]="'core.comments.nocomments' | translate" />
+        }
+
+        <!-- Load previous messages. -->
+        <core-infinite-loading [enabled]="canLoadMore" position="top" (action)="loadPrevious($event)" [error]="loadMoreError" />
+
+        <ion-list class="addon-messages-discussion-container">
+            <ng-container *ngFor="let comment of comments; index as index; last as last">
+
+                @if (comment.showDate) {
+                    <p class="ion-text-center addon-messages-date">
+                        {{ comment.timecreated * 1000 | coreFormatDate: "strftimedayshort" }}
+                    </p>
+                }
+
+                <core-message [message]="comment" [text]="comment.content" [time]="comment.timecreated * 1000" [user]="comment"
+                    [showDelete]="showDelete" [contextLevel]="contextLevel" [instanceId]="instanceId" [courseId]="courseId"
+                    (onDeleteMessage)="deleteComment(comment)" (onUndoDeleteMessage)="undoDeleteComment(comment)" />
+            </ng-container>
+
+            @if (hasOffline) {
+                <ion-badge class="ion-text-wrap" color="info">
+                    <ion-icon name="fas-triangle-exclamation" aria-hidden="true" />
+                    {{ 'core.thereisdatatosync' | translate:{$a: 'core.comments.comments' | translate | lowercase } }}
+                </ion-badge>
+                @if (offlineComment) {
+                    <!-- Workaround to fix https://github.com/angular/angular/issues/26133 -->
+                    <div>
+                        <core-message [message]="offlineComment" [text]="offlineComment.content" [user]="offlineComment"
+                            [showDelete]="showDelete" [contextLevel]="contextLevel" [instanceId]="instanceId" [courseId]="courseId"
+                            (onDeleteMessage)="deleteComment(offlineComment)" />
+                    </div>
+                }
+            }
+        </ion-list>
+
+    </core-loading>
+</ion-content>
+@if (commentsLoaded && canAddComments) {
+    <ion-footer class="footer-adjustable" id="viewer-footer">
+        <ion-toolbar>
+            <core-send-message-form [sendDisabled]="sending" [message]="newComment" (onSubmit)="addComment($event)"
+                [placeholder]="'core.comments.addcomment' | translate" />
+        </ion-toolbar>
+    </ion-footer>
+}

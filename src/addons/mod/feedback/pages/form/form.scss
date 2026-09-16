@@ -1,0 +1,25 @@
+:host {
+    .addon-mod_feedback-item ion-label.label-stacked {
+        margin: 11px 0px 10px;
+        transform: none;
+    }
+
+    .addon-mod_feedback-item-error {
+        padding-top: 5px;
+        padding-bottom: 8px;
+    }
+
+    .addon-mod_feedback-item {
+        p {
+            --color: initial;
+        }
+
+        ion-input ::ng-deep {
+            .label-text-wrapper {
+                font-size: var(--text-size);
+                transform: none;
+                -webkit-transform: none;
+            }
+        }
+    }
+}

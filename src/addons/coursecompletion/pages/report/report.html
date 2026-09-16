@@ -1,0 +1,132 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+        <ion-title>
+            <h1>{{ 'addon.coursecompletion.coursecompletion' | translate }}</h1>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-refresher slot="fixed" [disabled]="!loaded()" (ionRefresh)="refreshCompletion($event.target)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}" />
+    </ion-refresher>
+    <core-loading [hideUntil]="loaded()">
+        @if (user(); as userDisplay) {
+            <ion-item class="ion-text-wrap">
+                <core-user-avatar [user]="userDisplay" [courseId]="courseId()" slot="start" [linkProfile]="false" />
+                <ion-label>
+                    <p class="item-heading">{{userDisplay.fullname}}</p>
+                </ion-label>
+            </ion-item>
+        }
+
+        @let completionDisplay = completion();
+        @if (completionDisplay && tracked()) {
+            <ion-card>
+                <ion-item class="ion-text-wrap">
+                    <ion-label>
+                        <p class="item-heading">{{ 'addon.coursecompletion.status' | translate }}</p>
+                        <p>{{ statusText() | translate }}</p>
+                    </ion-label>
+                </ion-item>
+                <ion-item class="ion-text-wrap">
+                    <ion-label>
+                        <p class="item-heading">{{ 'addon.coursecompletion.required' | translate }}</p>
+                        @if (completionDisplay.aggregation === aggregationType.ALL) {
+                            <p>{{ 'addon.coursecompletion.criteriarequiredall' | translate }}</p>
+                        } @else if (completionDisplay.aggregation === aggregationType.ANY) {
+                            <p>{{ 'addon.coursecompletion.criteriarequiredany' | translate }}</p>
+                        }
+                    </ion-label>
+                </ion-item>
+            </ion-card>
+            <ion-card>
+                <ion-item-divider>
+                    <ion-label>
+                        <h2>{{ 'addon.coursecompletion.requiredcriteria' | translate }}</h2>
+                    </ion-label>
+                </ion-item-divider>
+                @for (criteria of completionDisplay.completions; track criteria) {
+                    <ion-item class="ion-hide-md-up ion-text-wrap">
+                        <ion-label>
+                            <p class="item-heading">
+                                <core-format-text [clean]="true" [text]="criteria.details.criteria" [filter]="false" />
+                            </p>
+                            <p>
+                                <core-format-text [clean]="true" [text]="criteria.details.requirement" [filter]="false" />
+                            </p>
+                        </ion-label>
+                            <strong slot="end">
+                                @if (criteria.complete) {
+                                    {{ 'core.yes' | translate }}
+                                } @else {
+                                    {{ 'core.no' | translate }}
+                                }
+                            </strong>
+                    </ion-item>
+                }
+                <ion-item class="ion-hide-md-down ion-text-wrap">
+                    <ion-label>
+                        <ion-row>
+                            <ion-col><strong>{{ 'addon.coursecompletion.criteriagroup' | translate }}</strong></ion-col>
+                            <ion-col><strong>{{ 'addon.coursecompletion.criteria' | translate }}</strong></ion-col>
+                            <ion-col><strong>{{ 'addon.coursecompletion.requirement' | translate }}</strong></ion-col>
+                            <ion-col><strong>{{ 'addon.coursecompletion.status' | translate }}</strong></ion-col>
+                            <ion-col><strong>{{ 'addon.coursecompletion.complete' | translate }}</strong></ion-col>
+                            <ion-col><strong>{{ 'addon.coursecompletion.completiondate' | translate }}</strong></ion-col>
+                        </ion-row>
+                        @for (criteria of completionDisplay.completions; track criteria) {
+                        <ion-row>
+                            <ion-col>
+                                <core-format-text [clean]="true" [text]="criteria.details.type" [filter]="false" />
+                            </ion-col>
+                            <ion-col>
+                                <core-format-text [clean]="true" [text]="criteria.details.criteria" [filter]="false" />
+                            </ion-col>
+                            <ion-col>
+                                <core-format-text [clean]="true" [text]="criteria.details.requirement" [filter]="false" />
+                            </ion-col>
+                            <ion-col>
+                                <core-format-text [text]="criteria.details.status" [filter]="false" />
+                            </ion-col>
+                            <ion-col>
+                                @if (criteria.complete) {
+                                    {{ 'core.yes' | translate }}
+                                } @else {
+                                    {{ 'core.no' | translate }}
+                                }
+                            </ion-col>
+                            <ion-col>
+                                @if (criteria.timecompleted) {
+                                    {{ criteria.timecompleted * 1000 | coreFormatDate :'strftimedatetimeshort' }}
+                                }
+                            </ion-col>
+                        </ion-row>
+                    }
+                    </ion-label>
+                </ion-item>
+            </ion-card>
+        }
+        @if (showSelfComplete() && tracked()) {
+            <ion-card>
+                <ion-item-divider>
+                    <ion-label>
+                        <h2>{{ 'addon.coursecompletion.manualselfcompletion' | translate }}</h2>
+                    </ion-label>
+                </ion-item-divider>
+                <ion-item>
+                    <ion-label>
+                        <ion-button expand="block" (click)="completeCourse()">
+                            {{ 'addon.coursecompletion.completecourse' | translate }}
+                        </ion-button>
+                    </ion-label>
+                </ion-item>
+            </ion-card>
+        } @else if (!tracked()) {
+            <core-alert-card type="warning"
+                [message]="'addon.coursecompletion.nottracked' | translate" />
+        }
+    </core-loading>
+</ion-content>

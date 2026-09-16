@@ -1,0 +1,56 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button [text]="'core.back' | translate" />
+        </ion-buttons>
+
+        <ion-title>
+            <h1>Error log</h1>
+        </ion-title>
+
+        @if (errorLogs.length) {
+            <ion-buttons slot="end">
+                <ion-button fill="clear" (click)="copyError()" [ariaLabel]="'core.settings.copyinfo' | translate">
+                    <ion-icon slot="icon-only" name="fas-clipboard" aria-hidden="true" />
+                </ion-button>
+            </ion-buttons>
+        }
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    @if (errorLogs.length) {
+        <ion-list>
+            <ion-item button lines="full" class="ion-text-wrap" *ngFor="let error of errorLogs" (click)="copyError(error)">
+                <ion-label class="ion-padding" [collapsible-item]="96">
+                    <p class="item-heading">Trace</p>
+                    <p class="ion-text-wrap">{{ error.message }}</p>
+
+                    @if (error.method) {
+                        <p class="item-heading">Method</p>
+                        <p class="ion-text-wrap">{{ error.method }}</p>
+                    }
+
+                    @if (error.type) {
+                        <p class="item-heading">Type</p>
+                        <p class="ion-text-wrap">{{ error.type }}</p>
+                    }
+
+                    @if (error.data) {
+                        <p class="item-heading">Data</p>
+                        <p class="ion-text-wrap">{{ error.data | json }}</p>
+                    }
+
+                    @if (error.time) {
+                        <p class="ion-text-end">
+                            {{ error.time | coreFormatDate :'strftimedatetimeshort' }}
+                        </p>
+                    }
+                </ion-label>
+            </ion-item>
+        </ion-list>
+    } @else {
+        <core-empty-box message="No logs available" icon="fas-clipboard-question" />
+    }
+
+</ion-content>

@@ -1,0 +1,18 @@
+@use "src/theme/globals" as *;
+
+:host {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+    width: 100%;
+    scroll-margin: 5px;
+}
+
+:host-context(.item) {
+    margin-bottom: 12px;
+}
+
+:host-context(.item-label-stacked) {
+    margin-top: 12px;
+}
