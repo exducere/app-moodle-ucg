@@ -99,7 +99,7 @@
     "displayqronsitescreen": false,
     "displayqroncredentialscreen": false,
     "forcedefaultlanguage": false,
-    "privacypolicy": "https://moodle.net/moodle-app-privacy/",
+    "privacypolicy": "https://exducere.github.io/app-moodle-ucg/politicas-privacidad/",
     "notificoncolor": "#ff8201",
     "enableanalytics": false,
     "forceColorScheme": "",
